@@ -9,6 +9,7 @@ import {
 } from "./_generated/server"
 import type { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server"
 import { getUserId, requireUserId } from "./lib/auth"
+import { activeFlag } from "./lib/active"
 import { Id, Doc } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
 import {
@@ -205,7 +206,7 @@ async function loadDrawingAndRole(
     .withIndex("by_drawingId", (q) => q.eq("drawingId", drawingId))
     .first()
 
-  if (!drawing || !drawing.isActive) {
+  if (!drawing || !activeFlag(drawing.isActive)) {
     return { drawing: drawing ?? null, role: null }
   }
 
@@ -261,7 +262,7 @@ export const save = mutation({
       userIdString
     )
 
-    if (existing && !existing.isActive) {
+    if (existing && existing.isActive === false) {
       throw new Error("Drawing not found")
     }
 
@@ -392,7 +393,7 @@ export const saveWithFiles = action({
       // 1) Keep existing files that are still present (no re-upload)
       for (const [fileId, storageId] of Object.entries(existingFiles)) {
         if (incomingFiles[fileId]) {
-          mergedFileMap[fileId] = storageId
+          mergedFileMap[fileId] = storageId as Id<"_storage">
         }
       }
 
@@ -423,7 +424,7 @@ export const saveWithFiles = action({
             const size: number = await ctx.runQuery(
               internal.drawings.getFileSize,
               {
-                storageId
+                storageId: storageId as Id<"_storage">
               }
             )
             bytesDelta -= size
@@ -491,7 +492,7 @@ export const get = query({
       userIdString
     )
 
-    if (!drawing || !drawing.isActive || role === null) {
+    if (!drawing || !activeFlag(drawing.isActive) || role === null) {
       return null
     }
 
@@ -537,7 +538,7 @@ export const list = query({
       .order("desc")
       .collect()
 
-    let activeDrawings = drawings.filter((d) => d.isActive)
+    let activeDrawings = drawings.filter((d) => activeFlag(d.isActive))
 
     // Filter by folderId if provided
     if (args.folderId !== undefined) {
@@ -602,7 +603,9 @@ export const listShared = query({
           .withIndex("by_drawingId", (q) => q.eq("drawingId", drawingId))
           .first()
 
-        return drawing?.isActive === true ? [drawingId, drawing] : null
+        return drawing && activeFlag(drawing.isActive)
+          ? [drawingId, drawing]
+          : null
       })
     )
     const drawingsById = new Map(
@@ -663,7 +666,7 @@ export const listCollaborators = query({
       userIdString
     )
 
-    if (!drawing || !drawing.isActive || role !== "owner") {
+    if (!drawing || !activeFlag(drawing.isActive) || role !== "owner") {
       return []
     }
 
@@ -716,7 +719,7 @@ export const insertCollaborator = internalMutation({
       args.ownerUserId
     )
 
-    if (!drawing || !drawing.isActive) {
+    if (!drawing || !activeFlag(drawing.isActive)) {
       throw new Error("Drawing not found")
     }
 
@@ -771,7 +774,7 @@ export const removeCollaborator = mutation({
       userIdString
     )
 
-    if (!drawing || !drawing.isActive) {
+    if (!drawing || !activeFlag(drawing.isActive)) {
       throw new Error("Drawing not found")
     }
 
@@ -860,7 +863,7 @@ export const updateName = mutation({
       userIdString
     )
 
-    if (!drawing || !drawing.isActive) {
+    if (!drawing || !activeFlag(drawing.isActive)) {
       throw new Error("Drawing not found")
     }
 
@@ -895,7 +898,7 @@ export const remove = mutation({
       )
       .first()
 
-    if (!existing || !existing.isActive) {
+    if (!existing || existing.isActive === false) {
       throw new Error("Drawing not found")
     }
 
@@ -973,14 +976,14 @@ export const getDrawingWithFiles = internalQuery({
       return { status: "not_found" as const, drawing: undefined }
     }
 
-    if (!drawing.isActive) {
+    if (drawing.isActive === false) {
       return {
         status: "inactive" as const,
         drawing: {
           _id: drawing._id,
           userId: drawing.userId,
           files: drawing.files,
-          isActive: drawing.isActive
+          isActive: false
         }
       }
     }
@@ -992,7 +995,7 @@ export const getDrawingWithFiles = internalQuery({
           _id: drawing._id,
           userId: drawing.userId,
           files: drawing.files,
-          isActive: drawing.isActive
+          isActive: activeFlag(drawing.isActive)
         }
       }
     }
@@ -1011,7 +1014,7 @@ export const getDrawingWithFiles = internalQuery({
           _id: drawing._id,
           userId: drawing.userId,
           files: drawing.files,
-          isActive: drawing.isActive
+          isActive: activeFlag(drawing.isActive)
         }
       }
     }
@@ -1022,7 +1025,7 @@ export const getDrawingWithFiles = internalQuery({
         _id: drawing._id,
         userId: drawing.userId,
         files: drawing.files,
-        isActive: drawing.isActive
+        isActive: activeFlag(drawing.isActive)
       }
     }
   }
@@ -1113,16 +1116,17 @@ export const deleteDrawingFilesInternal = internalAction({
 
     // Delete each file from storage (one per file/chunk)
     for (const storageId of Object.values(access.drawing.files)) {
+      const fileStorageId = storageId as Id<"_storage">
       try {
         // Get file size before deleting
         const fileSize: number = await ctx.runQuery(
           internal.drawings.getFileSize,
-          { storageId }
+          { storageId: fileStorageId }
         )
         totalBytesDeleted += fileSize
 
         // Delete file from storage
-        await ctx.storage.delete(storageId)
+        await ctx.storage.delete(fileStorageId)
       } catch (error) {
         console.error("Error deleting file:", error)
         // Continue with other files even if one fails

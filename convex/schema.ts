@@ -13,7 +13,7 @@ export default defineSchema({
     elements: excalidrawElement,
     appState: excalidrawAppState,
     files: v.optional(v.record(v.string(), v.id("_storage"))),
-    isActive: v.boolean(),
+    isActive: v.optional(v.boolean()),
     folderId: v.optional(v.string())
   })
     .index("by_userId", ["userId"])
@@ -27,7 +27,7 @@ export default defineSchema({
     name: v.string(),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
-    isActive: v.boolean()
+    isActive: v.optional(v.boolean())
   })
     .index("by_userId", ["userId"])
     .index("by_userId_and_folderId", ["userId", "folderId"]),

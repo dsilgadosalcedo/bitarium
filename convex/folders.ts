@@ -7,6 +7,7 @@ import {
   internalAction
 } from "./_generated/server"
 import { getUserId } from "./lib/auth"
+import { activeFlag } from "./lib/active"
 import { Id } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
 
@@ -35,7 +36,7 @@ export const list = query({
       .order("desc")
       .collect()
 
-    const activeFolders = folders.filter((f) => f.isActive)
+    const activeFolders = folders.filter((f) => activeFlag(f.isActive))
 
     return activeFolders.map((f) => ({
       _id: f._id,
@@ -113,7 +114,7 @@ export const updateName = mutation({
       )
       .first()
 
-    if (!existing || !existing.isActive) {
+    if (!existing || existing.isActive === false) {
       throw new Error("Folder not found")
     }
 
@@ -146,7 +147,7 @@ export const updateAppearance = mutation({
       )
       .first()
 
-    if (!existing || !existing.isActive) {
+    if (!existing || existing.isActive === false) {
       throw new Error("Folder not found")
     }
 
@@ -178,7 +179,7 @@ export const remove = mutation({
       )
       .first()
 
-    if (!existing || !existing.isActive) {
+    if (!existing || existing.isActive === false) {
       throw new Error("Folder not found")
     }
 
@@ -193,7 +194,7 @@ export const remove = mutation({
       .withIndex("by_folderId", (q) => q.eq("folderId", args.folderId))
       .collect()
 
-    const activeDrawings = drawings.filter((d) => d.isActive)
+    const activeDrawings = drawings.filter((d) => activeFlag(d.isActive))
 
     // Mark all drawings as inactive
     for (const drawing of activeDrawings) {
@@ -277,7 +278,7 @@ export const moveDrawingToFolder = mutation({
       )
       .first()
 
-    if (!drawing || !drawing.isActive) {
+    if (!drawing || !activeFlag(drawing.isActive)) {
       throw new Error("Drawing not found")
     }
 
@@ -291,7 +292,7 @@ export const moveDrawingToFolder = mutation({
         )
         .first()
 
-      if (!folder || !folder.isActive) {
+      if (!folder || folder.isActive === false) {
         throw new Error("Folder not found")
       }
     }
