@@ -3,12 +3,19 @@ import {
   FOOTER_MARK_LETTER_HEIGHT,
   FOOTER_MARK_MARGIN_CELLS,
   FOOTER_MARK_TEXT,
-  getDrawLogoCells,
+  BITARIUM_LOGO_ARIUM_MAX_OPACITY,
+  BITARIUM_LOGO_ARIUM_MIN_OPACITY,
+  getBitariumLogoAriumCells,
+  getBitariumLogoBitCells,
+  getBitariumLogoCells,
   FOOTER_INNER_FILL_COLOR_END,
   FOOTER_INNER_FILL_COLOR_START,
   FOOTER_INNER_FILL_FLICKER_CHANCE_HOVER,
   FOOTER_INNER_FILL_FLICKER_CHANCE_IDLE,
   getFooterInnerFillFlickerChance,
+  getHeartMarkCells,
+  HEART_MARK_HEIGHT,
+  HEART_MARK_MARGIN_CELLS,
   getFooterMarkCells,
   getFooterMarkInnerFillCells,
   getFooterMarkLinkLayout,
@@ -18,8 +25,52 @@ import {
 import { SIGN_IN_CELL_SIZE } from "./grid-layout"
 
 describe("grid pixel text", () => {
-  it("renders DRAW taller than the footer mark", () => {
-    const drawRows = new Set(getDrawLogoCells().map((cell) => cell.row))
+  it("fades ARium opacity from 40% on the left to 5% on the right by column", () => {
+    const ariumCells = getBitariumLogoAriumCells()
+    const leftCol = Math.min(...ariumCells.map((cell) => cell.col))
+    const rightCol = Math.max(...ariumCells.map((cell) => cell.col))
+    const leftColCells = ariumCells.filter((cell) => cell.col === leftCol)
+    const rightColCells = ariumCells.filter((cell) => cell.col === rightCol)
+    const middleCol = leftCol + Math.floor((rightCol - leftCol) / 2)
+    const middleColCells = ariumCells.filter((cell) => cell.col === middleCol)
+
+    expect(
+      leftColCells.every(
+        (cell) => cell.opacity === BITARIUM_LOGO_ARIUM_MAX_OPACITY
+      )
+    ).toBe(true)
+    expect(
+      rightColCells.every(
+        (cell) => cell.opacity === BITARIUM_LOGO_ARIUM_MIN_OPACITY
+      )
+    ).toBe(true)
+    expect(
+      middleColCells.every(
+        (cell) => cell.opacity > BITARIUM_LOGO_ARIUM_MIN_OPACITY
+      )
+    ).toBe(true)
+    expect(
+      middleColCells.every(
+        (cell) => cell.opacity < BITARIUM_LOGO_ARIUM_MAX_OPACITY
+      )
+    ).toBe(true)
+  })
+
+  it("places ARium after BIT without overlapping", () => {
+    const bitCols = new Set(getBitariumLogoBitCells().map((cell) => cell.col))
+    const ariumCols = new Set(
+      getBitariumLogoAriumCells().map((cell) => cell.col)
+    )
+
+    for (const col of ariumCols) {
+      expect(bitCols.has(col)).toBe(false)
+    }
+
+    expect(Math.min(...ariumCols)).toBeGreaterThan(Math.max(...bitCols))
+  })
+
+  it("renders the Bitarium logo taller than the footer mark", () => {
+    const drawRows = new Set(getBitariumLogoCells().map((cell) => cell.row))
     const footerRows = new Set(
       getFooterMarkCells(72, 40).map((cell) => cell.row)
     )
@@ -28,6 +79,32 @@ describe("grid pixel text", () => {
     expect(Math.max(...footerRows) - Math.min(...footerRows) + 1).toBe(
       FOOTER_MARK_LETTER_HEIGHT
     )
+  })
+
+  it("keeps the heart mark in the bottom-left with margin", () => {
+    const gridCols = Math.ceil(1280 / SIGN_IN_CELL_SIZE)
+    const gridRows = Math.ceil(720 / SIGN_IN_CELL_SIZE)
+    const margin = HEART_MARK_MARGIN_CELLS
+    const heartCells = getHeartMarkCells(gridCols, gridRows)
+
+    expect(heartCells.length).toBeGreaterThan(0)
+
+    for (const { col, row } of heartCells) {
+      expect(col).toBeGreaterThanOrEqual(margin)
+      expect(row).toBeGreaterThanOrEqual(0)
+      expect(col).toBeLessThan(gridCols)
+      expect(row).toBeLessThan(gridRows)
+    }
+
+    expect(Math.min(...heartCells.map((cell) => cell.col))).toBe(margin)
+    expect(Math.max(...heartCells.map((cell) => cell.row))).toBe(
+      gridRows - margin - 1
+    )
+    expect(
+      Math.max(...heartCells.map((cell) => cell.row)) -
+        Math.min(...heartCells.map((cell) => cell.row)) +
+        1
+    ).toBe(HEART_MARK_HEIGHT)
   })
 
   it("keeps the footer mark inside the grid with margin", () => {

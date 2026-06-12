@@ -9,11 +9,14 @@ export type PixelTextConfig = {
   originRow: number
 }
 
-export const DRAW_LOGO_PATTERNS: Record<string, readonly string[]> = {
-  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
-  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+export const BITARIUM_LOGO_PATTERNS: Record<string, readonly string[]> = {
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
-  W: ["10001", "10001", "10001", "10001", "10101", "10101", "01010"]
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  M: ["10001", "11011", "10101", "10001", "10001", "10001", "10001"]
 }
 
 export const FOOTER_MARK_PATTERNS: Record<string, readonly string[]> = {
@@ -51,15 +54,120 @@ export function buildPixelTextCells({
   return cells
 }
 
-export function getDrawLogoCells(): GridCell[] {
+const BITARIUM_LOGO_LETTER_WIDTH = 5
+const BITARIUM_LOGO_LETTER_GAP = 1
+const BITARIUM_LOGO_ORIGIN_COL = 2
+const BITARIUM_LOGO_ORIGIN_ROW = 2
+const BITARIUM_LOGO_PREFIX = "BIT"
+const BITARIUM_LOGO_SUFFIX = "ARIUM"
+
+export const BITARIUM_LOGO_BIT_OPACITY = 0.92
+export const BITARIUM_LOGO_ARIUM_MIN_OPACITY = 0.05
+export const BITARIUM_LOGO_ARIUM_MAX_OPACITY = 0.4
+
+export type LogoOpacityCell = GridCell & {
+  opacity: number
+}
+
+export function getBitariumLogoAriumOpacity(
+  col: number,
+  firstCol: number,
+  lastCol: number
+): number {
+  if (lastCol <= firstCol) {
+    return BITARIUM_LOGO_ARIUM_MAX_OPACITY
+  }
+
+  const progress = (lastCol - col) / (lastCol - firstCol)
+  const opacity =
+    BITARIUM_LOGO_ARIUM_MIN_OPACITY +
+    progress *
+      (BITARIUM_LOGO_ARIUM_MAX_OPACITY - BITARIUM_LOGO_ARIUM_MIN_OPACITY)
+
+  return Math.round(opacity * 1000) / 1000
+}
+
+function buildBitariumLogoCells(text: string, originCol: number): GridCell[] {
   return buildPixelTextCells({
-    text: "DRAW",
-    patterns: DRAW_LOGO_PATTERNS,
-    letterWidth: 5,
-    letterGap: 1,
-    originCol: 2,
-    originRow: 2
+    text,
+    patterns: BITARIUM_LOGO_PATTERNS,
+    letterWidth: BITARIUM_LOGO_LETTER_WIDTH,
+    letterGap: BITARIUM_LOGO_LETTER_GAP,
+    originCol,
+    originRow: BITARIUM_LOGO_ORIGIN_ROW
   })
+}
+
+export function getBitariumLogoBitCells(): GridCell[] {
+  return buildBitariumLogoCells(BITARIUM_LOGO_PREFIX, BITARIUM_LOGO_ORIGIN_COL)
+}
+
+export function getBitariumLogoAriumCells(): LogoOpacityCell[] {
+  const ariumOriginCol =
+    BITARIUM_LOGO_ORIGIN_COL +
+    BITARIUM_LOGO_PREFIX.length *
+      (BITARIUM_LOGO_LETTER_WIDTH + BITARIUM_LOGO_LETTER_GAP)
+
+  const baseCells = buildBitariumLogoCells(BITARIUM_LOGO_SUFFIX, ariumOriginCol)
+
+  if (baseCells.length === 0) {
+    return []
+  }
+
+  const cols = baseCells.map((cell) => cell.col)
+  const firstCol = Math.min(...cols)
+  const lastCol = Math.max(...cols)
+
+  return baseCells.map(({ col, row }) => ({
+    col,
+    row,
+    opacity: getBitariumLogoAriumOpacity(col, firstCol, lastCol)
+  }))
+}
+
+export function getBitariumLogoCells(): GridCell[] {
+  return [...getBitariumLogoBitCells(), ...getBitariumLogoAriumCells()]
+}
+
+export const HEART_MARK_MARGIN_CELLS = 2
+export const HEART_MARK_WIDTH = 5
+export const HEART_MARK_HEIGHT = 5
+export const HEART_MARK_OPACITY = 0.5
+
+const HEART_MARK_PATTERN = [
+  "01010",
+  "11111",
+  "11111",
+  "01110",
+  "00100"
+] as const
+
+export function getHeartMarkOrigin(gridCols: number, gridRows: number) {
+  const margin = HEART_MARK_MARGIN_CELLS
+
+  return {
+    originCol: margin,
+    originRow: gridRows - margin - HEART_MARK_HEIGHT
+  }
+}
+
+export function getHeartMarkCells(
+  gridCols: number,
+  gridRows: number
+): GridCell[] {
+  const { originCol, originRow } = getHeartMarkOrigin(gridCols, gridRows)
+  const cells: GridCell[] = []
+
+  for (let row = 0; row < HEART_MARK_PATTERN.length; row++) {
+    const rowPattern = HEART_MARK_PATTERN[row] ?? ""
+    for (let col = 0; col < rowPattern.length; col++) {
+      if (rowPattern[col] === "1") {
+        cells.push({ col: originCol + col, row: originRow + row })
+      }
+    }
+  }
+
+  return cells
 }
 
 export const FOOTER_MARK_TEXT = "7L"

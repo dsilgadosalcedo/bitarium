@@ -11,7 +11,12 @@ import {
   type SignInPanelLayout
 } from "../constants/grid-layout"
 import {
-  getDrawLogoCells,
+  getBitariumLogoAriumCells,
+  getBitariumLogoBitCells,
+  getBitariumLogoCells,
+  BITARIUM_LOGO_BIT_OPACITY,
+  getHeartMarkCells,
+  HEART_MARK_OPACITY,
   getFooterMarkCells,
   FOOTER_INNER_FILL_OPACITY_HOVER,
   FOOTER_INNER_FILL_OPACITY_IDLE,
@@ -24,14 +29,14 @@ import {
 const CELL_SIZE = SIGN_IN_CELL_SIZE
 
 const GRID_COLOR_VARS = [
-  "--draw-red-foreground",
-  "--draw-orange-foreground",
-  "--draw-yellow-foreground",
-  "--draw-green-foreground",
-  "--draw-blue-foreground",
-  "--draw-purple-foreground",
-  "--draw-pink-foreground",
-  "--draw-brown-foreground"
+  "--bit-red-foreground",
+  "--bit-orange-foreground",
+  "--bit-yellow-foreground",
+  "--bit-green-foreground",
+  "--bit-blue-foreground",
+  "--bit-purple-foreground",
+  "--bit-pink-foreground",
+  "--bit-brown-foreground"
 ] as const
 
 type CanvasTheme = {
@@ -63,6 +68,7 @@ const DEFAULT_CANVAS_THEME: CanvasTheme = {
 }
 
 const DEFAULT_LOGO_COLOR = "#373530"
+const DEFAULT_HEART_COLOR = "#c4554d"
 
 function readCanvasTheme(): CanvasTheme {
   if (typeof window === "undefined") {
@@ -98,11 +104,15 @@ function getGridDimensions(width: number, height: number) {
 function getMarkCellIndices(cols: number, rows: number) {
   const indices = new Set<number>()
 
-  for (const { col, row } of getDrawLogoCells()) {
+  for (const { col, row } of getBitariumLogoCells()) {
     indices.add(getCellIndex(col, row, cols))
   }
 
   for (const { col, row } of getFooterMarkReservedCells(cols, rows)) {
+    indices.add(getCellIndex(col, row, cols))
+  }
+
+  for (const { col, row } of getHeartMarkCells(cols, rows)) {
     indices.add(getCellIndex(col, row, cols))
   }
 
@@ -143,6 +153,18 @@ function readLogoColor() {
   )
 }
 
+function readHeartColor() {
+  if (typeof window === "undefined") {
+    return DEFAULT_HEART_COLOR
+  }
+
+  return (
+    getComputedStyle(document.body)
+      .getPropertyValue("--bit-red-foreground")
+      .trim() || DEFAULT_HEART_COLOR
+  )
+}
+
 function fillCell(
   ctx: CanvasRenderingContext2D,
   col: number,
@@ -174,6 +196,7 @@ export function GridBackground({
   const dimensionsRef = useRef({ cols: 0, rows: 0 })
   const themeRef = useRef<CanvasTheme>(DEFAULT_CANVAS_THEME)
   const logoColorRef = useRef(DEFAULT_LOGO_COLOR)
+  const heartColorRef = useRef(DEFAULT_HEART_COLOR)
   const panelLayoutRef = useRef(panelLayout)
   const canvasBackgroundRef = useRef(canvasBackground)
   const footerMarkHoveredRef = useRef(footerMarkHovered)
@@ -196,6 +219,7 @@ export function GridBackground({
 
     themeRef.current = readCanvasTheme()
     logoColorRef.current = readLogoColor()
+    heartColorRef.current = readHeartColor()
 
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -210,6 +234,7 @@ export function GridBackground({
 
       themeRef.current = nextTheme
       logoColorRef.current = readLogoColor()
+      heartColorRef.current = readHeartColor()
 
       if (themeChanged) {
         cellsRef.current.clear()
@@ -325,8 +350,16 @@ export function GridBackground({
         fillCell(ctx, col, row, theme.panelBorder, opacity)
       }
 
-      for (const { col, row } of getDrawLogoCells()) {
-        fillCell(ctx, col, row, logoColorRef.current, 0.92)
+      for (const { col, row } of getBitariumLogoBitCells()) {
+        fillCell(ctx, col, row, logoColorRef.current, BITARIUM_LOGO_BIT_OPACITY)
+      }
+
+      for (const { col, row, opacity } of getBitariumLogoAriumCells()) {
+        fillCell(ctx, col, row, logoColorRef.current, opacity)
+      }
+
+      for (const { col, row } of getHeartMarkCells(cols, rows)) {
+        fillCell(ctx, col, row, heartColorRef.current, HEART_MARK_OPACITY)
       }
 
       const footerInnerColors = footerInnerColorsRef.current
