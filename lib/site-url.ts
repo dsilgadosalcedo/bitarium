@@ -1,12 +1,14 @@
 export function getPublicSiteUrl() {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.VERCEL_URL ??
-    "http://localhost:3000"
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim()
 
-  if (siteUrl.startsWith("http://") || siteUrl.startsWith("https://")) {
-    return siteUrl
+  if (explicit) {
+    return explicit.replace(/\/+$/, "")
   }
 
-  return `https://${siteUrl}`
+  const vercel = process.env.VERCEL_URL?.trim()
+  if (vercel) {
+    return `https://${vercel.replace(/\/+$/, "")}`
+  }
+
+  return "http://localhost:3000"
 }
