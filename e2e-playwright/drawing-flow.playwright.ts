@@ -11,20 +11,13 @@ async function signUpAndOpenWorkspace(
   email: string,
   password: string = TEST_PASSWORD
 ) {
-  await page.goto("/signin")
-  await expect(page.getByText("Don't have an account?")).toBeVisible({
-    timeout: 15000
-  })
-  await page
-    .locator("div", { hasText: "Don't have an account?" })
-    .getByText("Sign up")
-    .click()
+  await page.goto("/sign-up")
 
   await page.locator('input[name="email"]').fill(email)
   await page.locator('input[name="password"]').fill(password)
   await page.getByRole("button", { name: /^sign up$/i }).click()
 
-  await page.waitForURL((url) => !url.pathname.startsWith("/signin"), {
+  await page.waitForURL((url) => !/^\/sign-(in|up)/.test(url.pathname), {
     timeout: 30000
   })
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 30000 })
