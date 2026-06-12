@@ -1,52 +1,65 @@
 import { type AuthFlow } from "../types"
 
+function collectErrorMessages(error: unknown): string[] {
+  const messages: string[] = []
+
+  const visit = (value: unknown) => {
+    if (value instanceof Error) {
+      messages.push(value.message)
+
+      if ("data" in value) {
+        const data = value.data
+        if (typeof data === "string") {
+          messages.push(data)
+        } else if (
+          typeof data === "object" &&
+          data !== null &&
+          "message" in data &&
+          typeof data.message === "string"
+        ) {
+          messages.push(data.message)
+        }
+      }
+
+      if (value.cause !== undefined) {
+        visit(value.cause)
+      }
+    } else if (typeof value === "string") {
+      messages.push(value)
+    } else if (typeof value === "object" && value !== null) {
+      if ("message" in value && typeof value.message === "string") {
+        messages.push(value.message)
+      }
+      if ("data" in value && typeof value.data === "string") {
+        messages.push(value.data)
+      }
+    }
+  }
+
+  visit(error)
+  return messages
+}
+
 export function getUserFriendlyError(error: unknown, flow: AuthFlow): string {
-  // Try to extract error message from various possible formats
-  let errorMessage = ""
+  const normalizedMessage = collectErrorMessages(error).join(" ").toLowerCase()
 
-  if (error instanceof Error) {
-    errorMessage = error.message
-    // Check if error has a data property (common in Convex errors)
-    if ("data" in error && typeof error.data === "string") {
-      errorMessage = error.data
-    }
-    // Check if error has a cause property
-    if (error.cause instanceof Error) {
-      errorMessage = error.cause.message
-    }
-  } else if (typeof error === "object" && error !== null) {
-    // Handle Convex error objects
-    if ("message" in error && typeof error.message === "string") {
-      errorMessage = error.message
-    }
-    if ("data" in error && typeof error.data === "string") {
-      errorMessage = error.data
-    }
-    // Convert to string as fallback
-    errorMessage = String(error)
-  } else {
-    errorMessage = String(error)
+  if (normalizedMessage.includes("toomanyfailedattempts")) {
+    return "Too many failed attempts. Please wait a moment and try again."
   }
 
-  // Normalize error message for case-insensitive matching
-  const normalizedMessage = errorMessage.toLowerCase()
-
-  // Check for specific error patterns
   if (
+    normalizedMessage.includes("invalidsecret") ||
     normalizedMessage.includes("invalidaccountid") ||
-    normalizedMessage.includes("invalid account id")
-  ) {
-    return flow === "signIn"
-      ? "Invalid username or password. Please check your credentials and try again."
-      : "An account with this username already exists. Please sign in instead."
-  }
-
-  if (
     normalizedMessage.includes("invalid credentials") ||
     normalizedMessage.includes("invalid email") ||
-    normalizedMessage.includes("invalid password")
+    normalizedMessage.includes("invalid password") ||
+    normalizedMessage.includes("wrong password") ||
+    (normalizedMessage.includes("password") &&
+      normalizedMessage.includes("incorrect"))
   ) {
-    return "Invalid username or password. Please check your credentials and try again."
+    return flow === "signIn"
+      ? "Wrong username or password."
+      : "Couldn't create your account. Please try again."
   }
 
   if (
@@ -54,31 +67,28 @@ export function getUserFriendlyError(error: unknown, flow: AuthFlow): string {
     normalizedMessage.includes("already exists") ||
     normalizedMessage.includes("account already exists")
   ) {
-    return "An account with this username already exists. Please sign in instead."
+    return "That username is already taken. Sign in instead."
   }
 
   if (
     normalizedMessage.includes("user not found") ||
-    normalizedMessage.includes("not found") ||
     normalizedMessage.includes("account not found")
   ) {
     return flow === "signIn"
-      ? "No account found with this username. Please sign up first."
-      : "An error occurred. Please try again."
+      ? "No account found with this username."
+      : "Couldn't create your account. Please try again."
   }
 
   if (
-    (normalizedMessage.includes("password") &&
-      normalizedMessage.includes("incorrect")) ||
-    normalizedMessage.includes("wrong password")
+    normalizedMessage.includes("password") &&
+    (normalizedMessage.includes("at least") ||
+      normalizedMessage.includes("8 characters") ||
+      normalizedMessage.includes("too short"))
   ) {
-    return "Incorrect password. Please try again."
+    return "Password must be at least 8 characters."
   }
 
-  if (normalizedMessage.includes("email")) {
-    return "Please enter a valid username."
-  }
-
-  // Generic fallback
-  return "An error occurred during authentication. Please try again."
+  return flow === "signIn"
+    ? "Wrong username or password."
+    : "Couldn't create your account. Please try again."
 }

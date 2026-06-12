@@ -1,29 +1,45 @@
 "use client"
 
-import Figures from "@/components/sign-in/components/figures"
+import { useState } from "react"
+import { FooterMarkLink } from "@/components/sign-in/components/footer-mark-link"
+import { GridBackground } from "@/components/sign-in/components/grid-background"
+import { SignInBackgroundPicker } from "@/components/sign-in/components/sign-in-background-picker"
+import { SignInGridPanel } from "@/components/sign-in/components/sign-in-grid-panel"
+import { SignInErrorZone } from "@/components/sign-in/components/sign-in-error-zone"
+import { useSignInBackground } from "../hooks/use-sign-in-background"
 import { useSignInForm } from "../hooks/use-sign-in-form"
-import { SignInHeader } from "./sign-in-header"
-import { SignInForm } from "./sign-in-form"
+import { useSignInPanelLayout } from "../hooks/use-sign-in-panel-layout"
 
 export function SignIn() {
   const { flow, error, loading, handleSubmit, toggleFlow } = useSignInForm()
+  const panelLayout = useSignInPanelLayout()
+  const { backgroundId, setBackgroundId, canvasBackgroundColor, rootStyle } =
+    useSignInBackground()
+  const [footerMarkHovered, setFooterMarkHovered] = useState(false)
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <Figures />
-      {/* Content */}
-      <div className="relative grid place-items-center z-10 w-full max-w-lg mx-auto h-full justify-center items-center px-4">
-        <div className="backdrop-blur-sm flex flex-col max-w-100 min-w-100 gap-8 p-8 rounded-4xl bg shadow-2xl border bg-muted/30 shadow-muted/70">
-          <SignInHeader />
-          <SignInForm
-            flow={flow}
-            error={error}
-            loading={loading}
-            onSubmit={handleSubmit}
-            onToggleFlow={toggleFlow}
-          />
-        </div>
-      </div>
+    <div
+      className="relative h-screen w-full overflow-hidden bg-[var(--sign-in-canvas-bg)]"
+      style={rootStyle}
+    >
+      <GridBackground
+        panelLayout={panelLayout}
+        canvasBackground={canvasBackgroundColor}
+        footerMarkHovered={footerMarkHovered}
+      />
+      <SignInBackgroundPicker
+        backgroundId={backgroundId}
+        onBackgroundChange={setBackgroundId}
+      />
+      <SignInGridPanel
+        panelLayout={panelLayout}
+        flow={flow}
+        loading={loading}
+        onSubmit={handleSubmit}
+        onToggleFlow={toggleFlow}
+      />
+      <SignInErrorZone panelLayout={panelLayout} error={error} />
+      <FooterMarkLink onHoverChange={setFooterMarkHovered} />
     </div>
   )
 }

@@ -1,58 +1,74 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { Loader2Icon } from "lucide-react"
+import { type SignInPanelSectionLayout } from "../constants/grid-layout"
 import { type AuthFlow } from "../types"
 import { SignInFormFields } from "./sign-in-form-fields"
-import { FlowToggle } from "./flow-toggle"
-import { TermsAndPrivacy } from "./terms-and-privacy"
-import { ErrorMessage } from "./error-message"
 
 interface SignInFormProps {
   flow: AuthFlow
-  error: string | null
   loading: boolean
   onSubmit: (formData: FormData) => void
-  onToggleFlow: () => void
+  sectionLayout: SignInPanelSectionLayout
+  fieldClassName: string
+  buttonClassName: string
 }
 
 export function SignInForm({
   flow,
-  error,
   loading,
   onSubmit,
-  onToggleFlow
+  sectionLayout,
+  fieldClassName,
+  buttonClassName
 }: SignInFormProps) {
+  const { columnSpan, passwordInputColumn, passwordToggleColumn, rows } =
+    sectionLayout
+
   return (
     <form
-      className="flex flex-col gap-4 w-full"
+      className="contents"
       onSubmit={async (e) => {
         e.preventDefault()
         const formData = new FormData(e.target as HTMLFormElement)
         onSubmit(formData)
       }}
     >
-      <SignInFormFields flow={flow} />
-      <Button
-        type="submit"
-        disabled={loading}
-        variant="outline"
-        className="w-full rounded-lg mt-2"
+      <SignInFormFields
+        flow={flow}
+        fieldClassName={fieldClassName}
+        columnSpan={columnSpan}
+        passwordInputColumn={passwordInputColumn}
+        passwordToggleColumn={passwordToggleColumn}
+        usernameGridRow={rows.username}
+        passwordGridRow={rows.password}
+        hintGridRow={rows.passwordHint}
+      />
+
+      <div
+        className="h-full w-full"
+        style={{
+          gridColumn: columnSpan,
+          gridRow: flow === "signUp" ? rows.submitSignUp : rows.submitSignIn
+        }}
       >
-        {loading ? (
-          <>
-            <Loader2Icon className="animate-spin" />
-            Loading
-          </>
-        ) : flow === "signIn" ? (
-          "Sign in"
-        ) : (
-          "Sign up"
-        )}
-      </Button>
-      <FlowToggle flow={flow} onToggle={onToggleFlow} />
-      <TermsAndPrivacy />
-      {error && <ErrorMessage error={error} />}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`gap-2 ${buttonClassName}`}
+        >
+          {loading ? (
+            <>
+              <Loader2Icon className="size-4 animate-spin" />
+              Loading
+            </>
+          ) : flow === "signIn" ? (
+            "Sign in"
+          ) : (
+            "Sign up"
+          )}
+        </button>
+      </div>
     </form>
   )
 }

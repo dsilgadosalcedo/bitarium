@@ -10,13 +10,13 @@ interface FlowToggleProps {
 export function FlowToggle({ flow, onToggle }: FlowToggleProps) {
   return (
     <div className="flex flex-row gap-2 text-sm justify-center">
-      <span className="text-slate-600 dark:text-slate-400">
+      <span className="text-[var(--sign-in-card-muted)]">
         {flow === "signIn"
           ? "Don't have an account?"
           : "Already have an account?"}
       </span>
       <span
-        className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 font-medium hover:underline decoration-2 underline-offset-2 cursor-pointer transition-colors"
+        className="cursor-pointer font-medium text-[var(--sign-in-card-text)] decoration-2 underline-offset-2 hover:underline"
         onClick={onToggle}
       >
         {flow === "signIn" ? "Sign up" : "Sign in"}

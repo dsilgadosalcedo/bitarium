@@ -19,7 +19,18 @@ export function useSignInForm() {
     formData.set("flow", flow)
 
     try {
-      await signIn("password", formData)
+      const result = await signIn("password", formData)
+
+      if (!result.signingIn) {
+        setError(
+          flow === "signIn"
+            ? "Wrong username or password."
+            : "Couldn't create your account. Please try again."
+        )
+        setLoading(false)
+        return
+      }
+
       router.push("/")
     } catch (error) {
       console.error("Authentication error:", error)

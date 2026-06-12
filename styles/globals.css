@@ -116,6 +116,22 @@
   --draw-pink-foreground: #b35488;
   --draw-red: #faecec;
   --draw-red-foreground: #c4554d;
+  --sign-in-canvas-bg: #e4e2de;
+  --sign-in-grid-line: rgba(55, 53, 48, 0.18);
+  --sign-in-card-bg: rgb(255 255 255 / 0.85);
+  --sign-in-card-text: #373530;
+  --sign-in-card-muted: #787774;
+  --sign-in-card-border: rgb(0 0 0 / 0.08);
+  --sign-in-card-shadow: rgb(0 0 0 / 0.1);
+  --sign-in-cell-accent: rgb(255 255 255 / 0.72);
+  --sign-in-cell-accent-hover: rgb(255 255 255 / 0.9);
+  --sign-in-button-bg: #6a65db;
+  --sign-in-button-text: #ffffff;
+  --sign-in-button-hover: #5b56c7;
+  --sign-in-button-border: #5b56c7;
+  --sign-in-panel-border: rgb(55 53 48 / 0.28);
+  --sign-in-error-bg: #c4554d;
+  --sign-in-error-text: #ffffff;
 }
 
 .dark {
@@ -170,6 +186,22 @@
   --draw-pink-foreground: #ba4a78;
   --draw-red: #332523;
   --draw-red-foreground: #be524b;
+  --sign-in-canvas-bg: #191919;
+  --sign-in-grid-line: rgba(255, 255, 255, 0.1);
+  --sign-in-card-bg: rgb(37 37 37 / 0.9);
+  --sign-in-card-text: #d4d4d4;
+  --sign-in-card-muted: #9b9b9b;
+  --sign-in-card-border: rgb(255 255 255 / 0.1);
+  --sign-in-card-shadow: rgb(0 0 0 / 0.35);
+  --sign-in-cell-accent: rgb(45 45 45 / 0.9);
+  --sign-in-cell-accent-hover: rgb(58 58 58 / 0.95);
+  --sign-in-button-bg: #e8e8e8;
+  --sign-in-button-text: #191919;
+  --sign-in-button-hover: #f5f5f5;
+  --sign-in-button-border: #e8e8e8;
+  --sign-in-panel-border: rgb(255 255 255 / 0.16);
+  --sign-in-error-bg: #c4554d;
+  --sign-in-error-text: #ffffff;
 }
 
 @layer base {

@@ -8,19 +8,19 @@ import {
 
 export function TermsAndPrivacy() {
   return (
-    <p className="text-xs text-slate-600 dark:text-slate-400 text-center px-2">
+    <p className="text-xs text-[var(--sign-in-card-muted)] text-center leading-relaxed">
       By continuing you are agreeing to our
       <br />
       <Link
         href={TERMS_OF_SERVICE_URL}
-        className="font-medium hover:underline decoration-2 underline-offset-2  text-slate-800 dark:text-slate-200"
+        className="font-medium hover:underline decoration-2 underline-offset-2 text-[var(--sign-in-card-text)]"
       >
         Terms of Use
       </Link>{" "}
       and{" "}
       <Link
         href={PRIVACY_POLICY_URL}
-        className="font-medium hover:underline decoration-2 underline-offset-2  text-slate-800 dark:text-slate-200"
+        className="font-medium hover:underline decoration-2 underline-offset-2 text-[var(--sign-in-card-text)]"
       >
         Privacy Policy
       </Link>
