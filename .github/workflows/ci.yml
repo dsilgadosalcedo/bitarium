@@ -15,6 +15,7 @@ jobs:
     env:
       NEXT_PUBLIC_CONVEX_URL: https://example.convex.cloud
       NEXT_PUBLIC_SITE_URL: https://example.com
+      NEXT_PUBLIC_CONTACT_EMAIL: legal@example.com
 
     steps:
       - name: Checkout

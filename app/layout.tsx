@@ -3,25 +3,13 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "../styles/globals.css"
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
 import ConvexClientProvider from "@/components/convex-client-provider"
+import { getPublicSiteUrl } from "@/lib/site-url"
 
-const siteName = "Draw"
+const siteName = "Bitarium"
 const siteDescription =
   "A modern, collaborative drawing application built with Excalidraw, Next.js, and Convex"
 
-function getSiteUrl() {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.VERCEL_URL ??
-    "http://localhost:3000"
-
-  if (siteUrl.startsWith("http://") || siteUrl.startsWith("https://")) {
-    return siteUrl
-  }
-
-  return `https://${siteUrl}`
-}
-
-const metadataBase = new URL(getSiteUrl())
+const metadataBase = new URL(getPublicSiteUrl())
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

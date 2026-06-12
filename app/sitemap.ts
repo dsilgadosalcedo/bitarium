@@ -1,20 +1,9 @@
 import type { MetadataRoute } from "next"
 
-function getSiteUrl() {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.VERCEL_URL ??
-    "http://localhost:3000"
-
-  if (siteUrl.startsWith("http://") || siteUrl.startsWith("https://")) {
-    return siteUrl
-  }
-
-  return `https://${siteUrl}`
-}
+import { getPublicSiteUrl } from "@/lib/site-url"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = getSiteUrl()
+  const baseUrl = getPublicSiteUrl()
 
   return [
     {
@@ -22,6 +11,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.1
+    },
+    {
+      url: new URL("/privacy", baseUrl).toString(),
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.2
+    },
+    {
+      url: new URL("/terms", baseUrl).toString(),
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.2
     }
   ]
 }
