@@ -1,37 +1,39 @@
-import { describe, it, expect, beforeEach, mock, spyOn } from "bun:test"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { EditableNameBadge } from "./editable-name-badge"
-import * as convexReact from "convex/react"
 import React from "react"
+
+const { mockUpdateName } = vi.hoisted(() => ({
+  mockUpdateName: vi.fn(() => Promise.resolve(null))
+}))
+
+vi.mock("convex/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("convex/react")>()
+  return {
+    ...actual,
+    useMutation: () => mockUpdateName
+  }
+})
 
 // Mock window.matchMedia for responsive classes
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: mock((query: string) => ({
+  value: vi.fn((query: string) => ({
     matches: query.includes("(min-width: 1024px)"), // lg breakpoint
     media: query,
     onchange: null,
-    addListener: mock(),
-    removeListener: mock(),
-    addEventListener: mock(),
-    removeEventListener: mock(),
-    dispatchEvent: mock()
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn()
   }))
 })
-
-// Mock Convex hooks
-const mockUpdateName = mock(() => Promise.resolve(null))
-
-// Spy on useMutation
-const useMutationSpy = spyOn(convexReact, "useMutation").mockImplementation(
-  () => mockUpdateName
-)
 
 describe("EditableNameBadge", () => {
   beforeEach(() => {
     mockUpdateName.mockClear()
-    useMutationSpy.mockReturnValue(mockUpdateName)
     // Set viewport to large screen to show the component
     Object.defineProperty(window, "innerWidth", {
       writable: true,

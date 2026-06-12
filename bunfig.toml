@@ -1,5 +1,0 @@
-[test]
-# Exclude E2E tests from Bun test runner (they use Playwright)
-preload = ["./test/setup.ts"]
-ignore = ["e2e-playwright/**"]
-

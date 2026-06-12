@@ -6,7 +6,8 @@ Thank you for your interest in contributing to Draw! This document provides guid
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) (>=1.0.0) or [Node.js](https://nodejs.org/) (>=18.0.0)
+- [Node.js](https://nodejs.org/) (>=18.0.0)
+- [pnpm](https://pnpm.io/) (>=9.0.0)
 - A [Convex](https://www.convex.dev/) account
 - Git
 
@@ -22,13 +23,13 @@ Thank you for your interest in contributing to Draw! This document provides guid
 2. **Install dependencies**
 
    ```bash
-   bun install
+   pnpm install
    ```
 
 3. **Set up Convex**
 
    ```bash
-   bunx convex dev
+   pnpm exec convex dev
    ```
 
 4. **Configure environment variables**
@@ -41,7 +42,7 @@ Thank you for your interest in contributing to Draw! This document provides guid
 
 5. **Start development servers**
    ```bash
-   bun run dev
+   pnpm run dev
    ```
 
 ## Code Style
@@ -71,7 +72,7 @@ Thank you for your interest in contributing to Draw! This document provides guid
 
 - Use Prettier (configured in the project)
 - Format on save is enabled in VS Code
-- Run `bun run format` before committing
+- Run `pnpm run format` before committing
 
 ## Testing
 
@@ -79,27 +80,27 @@ Thank you for your interest in contributing to Draw! This document provides guid
 
 ```bash
 # Run all tests
-bun test
+pnpm run test
 
 # Run tests in watch mode
-bun test --watch
+pnpm run test:watch
 
 # Run tests with coverage
-bun test --coverage
+pnpm run test:coverage
 ```
 
 ### Writing Tests
 
 - Write tests for all new features
 - Aim for >80% code coverage
-- Use Bun's test runner (Jest-compatible API)
+- Use Vitest (Jest-compatible API)
 - Use React Testing Library for component tests
 - Write E2E tests for critical user flows
 
 ### Test Structure
 
 ```typescript
-import { describe, it, expect } from "bun:test"
+import { describe, it, expect } from "vitest"
 
 describe("ComponentName", () => {
   it("should do something", () => {
@@ -143,9 +144,9 @@ feat: add virtual scrolling to drawing list
 3. **Run checks**
 
    ```bash
-   bun run lint
-   bun run type-check
-   bun test
+   pnpm run lint
+   pnpm run type-check
+   pnpm run test
    ```
 
 4. **Commit your changes**

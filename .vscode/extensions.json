@@ -3,7 +3,7 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "bradlc.vscode-tailwindcss",
-    "oven.bun-vscode",
+    "arcanis.vscode-jest",
     "ms-playwright.playwright"
   ]
 }

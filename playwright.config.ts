@@ -38,7 +38,7 @@ export default defineConfig({
   webServer: useExistingServer
     ? undefined
     : {
-        command: "PORT=4010 bun run dev:frontend",
+        command: "PORT=4010 pnpm run dev:frontend:app",
         url: "http://localhost:4010",
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000

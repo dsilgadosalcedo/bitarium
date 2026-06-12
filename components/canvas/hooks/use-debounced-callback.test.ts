@@ -1,24 +1,11 @@
-import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test"
+import { describe, it, expect, vi } from "vitest"
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { useDebouncedCallback } from "./use-debounced-callback"
 import type { AppState, BinaryFiles } from "@excalidraw/excalidraw/types"
 import type { OrderedExcalidrawElement } from "@excalidraw/excalidraw/element/types"
-import React from "react"
-
 describe("useDebouncedCallback", () => {
-  beforeEach(() => {
-    // Reset timers
-    if (typeof globalThis !== "undefined" && globalThis.setTimeout) {
-      // Timers are handled by Bun's test runner
-    }
-  })
-
-  afterEach(() => {
-    // Cleanup handled by Bun
-  })
-
   it("should debounce callback calls", async () => {
-    const callback = mock(() => Promise.resolve())
+    const callback = vi.fn(() => Promise.resolve())
     const { result } = renderHook(() => useDebouncedCallback(callback, 100))
 
     const elements: readonly OrderedExcalidrawElement[] = []
@@ -75,7 +62,7 @@ describe("useDebouncedCallback", () => {
   })
 
   it("should flush pending calls immediately", () => {
-    const callback = mock(() => Promise.resolve())
+    const callback = vi.fn(() => Promise.resolve())
     const { result } = renderHook(() => useDebouncedCallback(callback, 1000))
 
     const elements: readonly OrderedExcalidrawElement[] = []
@@ -110,7 +97,7 @@ describe("useDebouncedCallback", () => {
   })
 
   it("should cleanup on unmount", async () => {
-    const callback = mock(() => Promise.resolve())
+    const callback = vi.fn(() => Promise.resolve())
     const { result, unmount } = renderHook(() =>
       useDebouncedCallback(callback, 100)
     )
@@ -141,7 +128,7 @@ describe("useDebouncedCallback", () => {
   })
 
   it("should use latest values when callback executes", async () => {
-    const callback = mock(() => Promise.resolve())
+    const callback = vi.fn(() => Promise.resolve())
     const { result } = renderHook(() => useDebouncedCallback(callback, 100))
 
     const elements1: readonly OrderedExcalidrawElement[] = []

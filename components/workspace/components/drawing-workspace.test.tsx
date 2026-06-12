@@ -1,26 +1,29 @@
-import { describe, it, expect } from "bun:test"
+import { describe, it, expect, vi } from "vitest"
 import { render } from "@testing-library/react"
 import { DrawingWorkspace } from "./drawing-workspace"
-import * as convexReact from "convex/react"
 import { ConvexProvider } from "convex/react"
 import { ConvexClient } from "convex/browser"
-import { mock, spyOn } from "bun:test"
 import React from "react"
 
-// Mock Convex hooks
-const mockUseQuery = mock(() => undefined)
-const mockUseAction = mock(() => mock(() => Promise.resolve(null)))
+const { mockUseQuery, mockUseAction } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(() => undefined),
+  mockUseAction: vi.fn(() => vi.fn(() => Promise.resolve(null)))
+}))
 
-spyOn(convexReact, "useQuery").mockImplementation(mockUseQuery)
-spyOn(convexReact, "useAction").mockImplementation(mockUseAction)
+vi.mock("convex/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("convex/react")>()
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+    useAction: mockUseAction
+  }
+})
 
-// Create a mock Convex client
-// We'll mock the ConvexProvider to avoid needing a real client
 const mockClient = {
-  query: mock(),
-  mutation: mock(),
-  action: mock(),
-  close: mock()
+  query: vi.fn(),
+  mutation: vi.fn(),
+  action: vi.fn(),
+  close: vi.fn()
 } as unknown as ConvexClient
 
 describe("DrawingWorkspace", () => {
@@ -32,10 +35,8 @@ describe("DrawingWorkspace", () => {
           <DrawingWorkspace />
         </ConvexProvider>
       )
-      // Workspace should render
       expect(container).toBeTruthy()
-    } catch (error) {
-      // Skip if Convex client setup fails in test environment
+    } catch {
       expect(true).toBe(true)
     }
   })
@@ -48,10 +49,8 @@ describe("DrawingWorkspace", () => {
           <DrawingWorkspace />
         </ConvexProvider>
       )
-      // Should have the provider wrapper
       expect(container).toBeTruthy()
-    } catch (error) {
-      // Skip if Convex client setup fails in test environment
+    } catch {
       expect(true).toBe(true)
     }
   })

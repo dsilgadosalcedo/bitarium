@@ -1,0 +1,4 @@
+{
+  "name": "draw",
+  "script": "dev:frontend:app"
+}

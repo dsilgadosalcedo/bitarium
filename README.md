@@ -20,13 +20,15 @@ A modern, collaborative drawing application built with [Excalidraw](https://exca
 - **Drawing Engine**: Excalidraw
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI
-- **Runtime**: Bun
+- **Package Manager**: pnpm
+- **Local Dev URLs**: [portless](https://portless.sh/)
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- [Bun](https://bun.sh/) (>=1.0.0) or [Node.js](https://nodejs.org/) (>=18.0.0)
+- [Node.js](https://nodejs.org/) (>=18.0.0)
+- [pnpm](https://pnpm.io/) (>=9.0.0)
 - A [Convex](https://www.convex.dev/) account (free tier available)
 - Git
 
@@ -42,7 +44,7 @@ cd draw
 2. **Install dependencies**
 
 ```bash
-bun install
+pnpm install
 ```
 
 3. **Set up Convex**
@@ -50,7 +52,7 @@ bun install
 If you haven't already, initialize Convex in your project:
 
 ```bash
-bunx convex dev
+pnpm exec convex dev
 ```
 
 This will:
@@ -66,6 +68,7 @@ Create a `.env.local` file in the root directory:
 ```env
 CONVEX_DEPLOYMENT=
 NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_SITE_URL=https://draw.localhost
 ```
 
 You can find these values in your [Convex dashboard](https://dashboard.convex.dev/).
@@ -73,12 +76,14 @@ You can find these values in your [Convex dashboard](https://dashboard.convex.de
 5. **Start the development servers**
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
-This command runs both the Next.js frontend and Convex backend in parallel.
+This command runs both the Next.js frontend (via [portless](https://portless.sh/)) and Convex backend in parallel.
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+The application will be available at [https://draw.localhost](https://draw.localhost).
+
+On first run, portless may prompt for your password to trust its local HTTPS certificate and bind port 443. To run the Next.js server without portless, use `pnpm run dev:frontend:app`.
 
 ## Project Structure
 
@@ -106,12 +111,13 @@ draw/
 
 ## Available Scripts
 
-- `bun run dev` - Start both frontend and backend development servers
-- `bun run dev:frontend` - Start only the Next.js frontend
-- `bun run dev:backend` - Start only the Convex backend
-- `bun run build` - Build the application for production
-- `bun run start` - Start the production server
-- `bun run lint` - Run ESLint to check code quality
+- `pnpm run dev` - Start both frontend and backend development servers
+- `pnpm run dev:frontend` - Start only the Next.js frontend at https://draw.localhost
+- `pnpm run dev:frontend:app` - Start Next.js directly (no portless proxy)
+- `pnpm run dev:backend` - Start only the Convex backend
+- `pnpm run build` - Build the application for production
+- `pnpm run start` - Start the production server
+- `pnpm run lint` - Run ESLint to check code quality
 
 ## Usage
 
@@ -127,18 +133,18 @@ draw/
 ### Running in Development Mode
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 This starts:
 
-- Next.js dev server on `http://localhost:3000`
+- Next.js dev server at `https://draw.localhost` (via portless)
 - Convex dev server (handles backend and real-time sync)
 
 ### Building for Production
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 This creates an optimized production build in the `.next` directory.
@@ -148,7 +154,7 @@ This creates an optimized production build in the `.next` directory.
 1. **Deploy Convex Backend**
 
 ```bash
-bunx convex deploy
+pnpm exec convex deploy
 ```
 
 2. **Deploy Frontend**
@@ -156,7 +162,7 @@ bunx convex deploy
 Deploy to your preferred platform (Vercel, Netlify, etc.):
 
 - **Vercel**: Connect your repository and deploy automatically
-- **Manual**: Run `bun run build` and deploy the `.next` directory
+- **Manual**: Run `pnpm run build` and deploy the `.next` directory
 
 Make sure to set the environment variables in your deployment platform:
 
