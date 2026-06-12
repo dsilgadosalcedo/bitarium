@@ -1,15 +1,19 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import "../styles/globals.css"
-import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
+
+import { SiteJsonLd } from "@/components/seo/site-json-ld"
 import ConvexClientProvider from "@/components/convex-client-provider"
-import { getPublicSiteUrl } from "@/lib/site-url"
+import {
+  createPageMetadata,
+  getSiteUrl,
+  PUBLISHER_NAME,
+  PUBLISHER_URL,
+  SITE_DESCRIPTION,
+  SITE_NAME
+} from "@/lib/seo"
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
 
-const siteName = "Bitarium"
-const siteDescription =
-  "A modern, collaborative drawing application built with Excalidraw, Next.js, and Convex"
-
-const metadataBase = new URL(getPublicSiteUrl())
+import "../styles/globals.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,42 +26,25 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase,
-  title: {
-    default: siteName,
-    template: `%s | ${siteName}`
-  },
-  description: siteDescription,
-  alternates: {
-    canonical: "/"
-  },
-  robots: {
-    index: false,
-    follow: false
-  },
-  openGraph: {
-    type: "website",
-    url: "/",
-    siteName,
-    title: siteName,
-    description: siteDescription,
-    images: [
-      {
-        url: "/app.svg",
-        width: 512,
-        height: 512,
-        alt: `${siteName} logo`
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteName,
-    description: siteDescription,
-    images: ["/app.svg"]
-  },
+  metadataBase: getSiteUrl(),
+  applicationName: SITE_NAME,
+  authors: [{ name: PUBLISHER_NAME, url: PUBLISHER_URL }],
+  creator: PUBLISHER_NAME,
+  publisher: PUBLISHER_NAME,
+  category: "design",
+  ...createPageMetadata({
+    description: SITE_DESCRIPTION
+  }),
   icons: {
-    icon: "/app.svg"
+    icon: [{ url: "/app.svg", type: "image/svg+xml" }]
+  },
+  appleWebApp: {
+    title: SITE_NAME,
+    capable: true,
+    statusBarStyle: "default"
+  },
+  formatDetection: {
+    telephone: false
   }
 }
 
@@ -72,6 +59,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
         >
+          <SiteJsonLd />
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </body>
       </html>

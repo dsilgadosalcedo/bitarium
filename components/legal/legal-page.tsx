@@ -2,6 +2,7 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 
 import { getLegalContactEmail } from "@/lib/legal/config"
+import { HELP_CENTER_PATH } from "@/lib/help-routes"
 import {
   LEGAL_SITE_NAME,
   PRIVACY_POLICY_PATH,
@@ -27,10 +28,16 @@ export function LegalPage({
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-5">
-          <Link href="/signin" className="text-sm font-medium hover:underline">
-            ← Back to sign in
+          <Link href="/" className="text-sm font-medium hover:underline">
+            ← Back to Bitarium
           </Link>
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link
+              href={HELP_CENTER_PATH}
+              className="hover:text-foreground hover:underline"
+            >
+              Help
+            </Link>
             {currentPage !== "terms" ? (
               <Link
                 href={TERMS_OF_SERVICE_PATH}

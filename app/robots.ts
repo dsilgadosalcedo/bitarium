@@ -1,15 +1,14 @@
 import type { MetadataRoute } from "next"
 
-import { getPublicSiteUrl } from "@/lib/site-url"
+import { ROBOTS_DISALLOW_PATHS } from "@/lib/public-routes"
+import { absoluteUrl } from "@/lib/seo"
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = getPublicSiteUrl()
-
   return {
     rules: {
       userAgent: "*",
-      disallow: "/"
+      disallow: [...ROBOTS_DISALLOW_PATHS]
     },
-    sitemap: new URL("/sitemap.xml", baseUrl).toString()
+    sitemap: absoluteUrl("/sitemap.xml")
   }
 }

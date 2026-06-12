@@ -1,28 +1,15 @@
 import type { MetadataRoute } from "next"
 
-import { getPublicSiteUrl } from "@/lib/site-url"
+import { PUBLIC_SEO_SITEMAP_ENTRIES } from "@/lib/public-routes"
+import { absoluteUrl } from "@/lib/seo"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = getPublicSiteUrl()
+  const lastModified = new Date()
 
-  return [
-    {
-      url: new URL("/", baseUrl).toString(),
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.1
-    },
-    {
-      url: new URL("/privacy", baseUrl).toString(),
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.2
-    },
-    {
-      url: new URL("/terms", baseUrl).toString(),
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.2
-    }
-  ]
+  return PUBLIC_SEO_SITEMAP_ENTRIES.map((route) => ({
+    url: absoluteUrl(route.path),
+    lastModified,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority
+  }))
 }
