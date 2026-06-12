@@ -1,6 +1,6 @@
 # API Documentation
 
-This document describes all Convex queries, mutations, and actions available in the Draw application.
+This document describes all Convex queries, mutations, and actions available in the Bitarium application.
 
 ## Authentication
 

@@ -56,9 +56,9 @@ describe("local draft store", () => {
       return
     }
 
-    window.localStorage.setItem("draw:draft:v1:invalid", "not-json")
+    window.localStorage.setItem("bitarium:draft:v1:invalid", "not-json")
     pruneOldLocalDrafts()
 
-    expect(window.localStorage.getItem("draw:draft:v1:invalid")).toBeNull()
+    expect(window.localStorage.getItem("bitarium:draft:v1:invalid")).toBeNull()
   })
 })

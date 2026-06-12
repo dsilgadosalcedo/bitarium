@@ -1,4 +1,4 @@
-# Draw
+# Bitarium
 
 A modern, collaborative drawing application built with [Excalidraw](https://excalidraw.com/), [Next.js](https://nextjs.org/), and [Convex](https://www.convex.dev/). Create beautiful drawings, organize them in folders, and collaborate with others in real-time.
 
@@ -38,7 +38,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <your-repo-url>
-cd draw
+cd bitarium
 ```
 
 2. **Install dependencies**
@@ -68,7 +68,7 @@ Create a `.env.local` file in the root directory:
 ```env
 CONVEX_DEPLOYMENT=
 NEXT_PUBLIC_CONVEX_URL=
-NEXT_PUBLIC_SITE_URL=https://draw.localhost
+NEXT_PUBLIC_SITE_URL=https://bitarium.localhost
 ```
 
 You can find these values in your [Convex dashboard](https://dashboard.convex.dev/).
@@ -81,14 +81,14 @@ pnpm run dev
 
 This command runs both the Next.js frontend (via [portless](https://portless.sh/)) and Convex backend in parallel.
 
-The application will be available at [https://draw.localhost](https://draw.localhost).
+The application will be available at [https://bitarium.localhost](https://bitarium.localhost).
 
 On first run, portless may prompt for your password to trust its local HTTPS certificate and bind port 443. To run the Next.js server without portless, use `pnpm run dev:frontend:app`.
 
 ## Project Structure
 
 ```
-draw/
+bitarium/
 ├── app/                    # Next.js app directory
 │   ├── layout.tsx          # Root layout
 │   ├── page.tsx            # Main drawing workspace
@@ -112,7 +112,7 @@ draw/
 ## Available Scripts
 
 - `pnpm run dev` - Start both frontend and backend development servers
-- `pnpm run dev:frontend` - Start only the Next.js frontend at https://draw.localhost
+- `pnpm run dev:frontend` - Start only the Next.js frontend at https://bitarium.localhost
 - `pnpm run dev:frontend:app` - Start Next.js directly (no portless proxy)
 - `pnpm run dev:backend` - Start only the Convex backend
 - `pnpm run build` - Build the application for production
@@ -138,7 +138,7 @@ pnpm run dev
 
 This starts:
 
-- Next.js dev server at `https://draw.localhost` (via portless)
+- Next.js dev server at `https://bitarium.localhost` (via portless)
 - Convex dev server (handles backend and real-time sync)
 
 ### Building for Production

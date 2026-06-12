@@ -1,6 +1,6 @@
-# Contributing to Draw
+# Contributing to Bitarium
 
-Thank you for your interest in contributing to Draw! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Bitarium! This document provides guidelines and instructions for contributing.
 
 ## Getting Started
 
@@ -16,8 +16,8 @@ Thank you for your interest in contributing to Draw! This document provides guid
 1. **Fork and clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/draw.git
-   cd draw
+   git clone https://github.com/your-username/bitarium.git
+   cd bitarium
    ```
 
 2. **Install dependencies**

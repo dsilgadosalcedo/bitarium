@@ -8,7 +8,7 @@ import {
   SIGN_IN_FIELD_TRANSITION
 } from "../constants/sign-in-constants"
 
-const passwordToggleClass = `flex h-full w-full cursor-pointer items-center justify-center rounded-none border border-l-0 border-[var(--sign-in-grid-line)] bg-[var(--sign-in-canvas-bg)] text-[var(--sign-in-card-muted)] shadow-none ${SIGN_IN_FIELD_TRANSITION} hover:text-[var(--sign-in-card-text)] focus-visible:border-[var(--draw-purple-foreground)] focus-visible:ring-0`
+const passwordToggleClass = `flex h-full w-full cursor-pointer items-center justify-center rounded-none border border-l-0 border-[var(--sign-in-grid-line)] bg-[var(--sign-in-canvas-bg)] text-[var(--sign-in-card-muted)] shadow-none ${SIGN_IN_FIELD_TRANSITION} hover:text-[var(--sign-in-card-text)] focus-visible:border-[var(--bit-purple-foreground)] focus-visible:ring-0`
 
 interface SignInFormFieldsProps {
   flow: AuthFlow

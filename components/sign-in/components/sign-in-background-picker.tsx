@@ -16,10 +16,10 @@ const swatchSharedClass =
 
 function getSwatchClassName(isSelected: boolean) {
   if (isSelected) {
-    return `${swatchSharedClass} border-[var(--draw-purple-foreground)]`
+    return `${swatchSharedClass} border-[var(--bit-purple-foreground)]`
   }
 
-  return `${swatchSharedClass} border-transparent hover:border-[color-mix(in_srgb,var(--draw-purple-foreground)_50%,transparent)] focus-visible:border-[var(--draw-purple-foreground)]`
+  return `${swatchSharedClass} border-transparent hover:border-[color-mix(in_srgb,var(--bit-purple-foreground)_50%,transparent)] focus-visible:border-[var(--bit-purple-foreground)]`
 }
 
 interface SignInBackgroundPickerProps {

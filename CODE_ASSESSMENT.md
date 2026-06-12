@@ -1,6 +1,6 @@
 # Code Assessment & Rating
 
-**Project**: Draw - Collaborative Drawing Application  
+**Project**: Bitarium - Collaborative Drawing Application  
 **Assessment Date**: 2024  
 **Assessor**: AI Code Reviewer
 

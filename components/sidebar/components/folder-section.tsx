@@ -188,7 +188,7 @@ export function FolderSection({
                           folderIconMap[
                             iconKey as keyof typeof folderIconMap
                           ] ?? folderIconMap.folder
-                        const iconColor = `var(--draw-${folderColor}-foreground)`
+                        const iconColor = `var(--bit-${folderColor}-foreground)`
 
                         return (
                           <FolderIcon
@@ -330,7 +330,7 @@ export function FolderSection({
                                 {FOLDER_COLORS.map((option) => {
                                   const isActive =
                                     (folder.color ?? "default") === option.value
-                                  const swatchBg = `var(--draw-${option.value}-foreground)`
+                                  const swatchBg = `var(--bit-${option.value}-foreground)`
 
                                   return (
                                     <button
@@ -363,7 +363,7 @@ export function FolderSection({
                                   const OptionIcon = option.Icon
                                   const isActive =
                                     (folder.icon ?? "folder") === option.value
-                                  const iconColor = `var(--draw-${
+                                  const iconColor = `var(--bit-${
                                     folder.color ?? "default"
                                   }-foreground)`
 

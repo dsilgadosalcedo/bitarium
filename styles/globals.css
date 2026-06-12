@@ -43,24 +43,24 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-draw-orange: var(--draw-orange);
-  --color-draw-orange-foreground: var(--draw-orange-foreground);
-  --color-draw-gray: var(--draw-gray);
-  --color-draw-gray-foreground: var(--draw-gray-foreground);
-  --color-draw-brown: var(--draw-brown);
-  --color-draw-brown-foreground: var(--draw-brown-foreground);
-  --color-draw-yellow: var(--draw-yellow);
-  --color-draw-yellow-foreground: var(--draw-yellow-foreground);
-  --color-draw-green: var(--draw-green);
-  --color-draw-green-foreground: var(--draw-green-foreground);
-  --color-draw-blue: var(--draw-blue);
-  --color-draw-blue-foreground: var(--draw-blue-foreground);
-  --color-draw-purple: var(--draw-purple);
-  --color-draw-purple-foreground: var(--draw-purple-foreground);
-  --color-draw-pink: var(--draw-pink);
-  --color-draw-pink-foreground: var(--draw-pink-foreground);
-  --color-draw-red: var(--draw-red);
-  --color-draw-red-foreground: var(--draw-red-foreground);
+  --color-bit-orange: var(--bit-orange);
+  --color-bit-orange-foreground: var(--bit-orange-foreground);
+  --color-bit-gray: var(--bit-gray);
+  --color-bit-gray-foreground: var(--bit-gray-foreground);
+  --color-bit-brown: var(--bit-brown);
+  --color-bit-brown-foreground: var(--bit-brown-foreground);
+  --color-bit-yellow: var(--bit-yellow);
+  --color-bit-yellow-foreground: var(--bit-yellow-foreground);
+  --color-bit-green: var(--bit-green);
+  --color-bit-green-foreground: var(--bit-green-foreground);
+  --color-bit-blue: var(--bit-blue);
+  --color-bit-blue-foreground: var(--bit-blue-foreground);
+  --color-bit-purple: var(--bit-purple);
+  --color-bit-purple-foreground: var(--bit-purple-foreground);
+  --color-bit-pink: var(--bit-pink);
+  --color-bit-pink-foreground: var(--bit-pink-foreground);
+  --color-bit-red: var(--bit-red);
+  --color-bit-red-foreground: var(--bit-red-foreground);
 }
 
 :root {
@@ -96,26 +96,26 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --draw-default: #ffffff;
-  --draw-default-foreground: #373530;
-  --draw-gray: #f1f1ef;
-  --draw-gray-foreground: #787774;
-  --draw-brown: #f3eeee;
-  --draw-brown-foreground: #976d57;
-  --draw-orange: #f8ecdf;
-  --draw-orange-foreground: #cc782f;
-  --draw-yellow: #faf3dd;
-  --draw-yellow-foreground: #c29343;
-  --draw-green: #eef3ed;
-  --draw-green-foreground: #548164;
-  --draw-blue: #e9f3f7;
-  --draw-blue-foreground: #487ca5;
-  --draw-purple: #f6f3f8;
-  --draw-purple-foreground: #8a67ab;
-  --draw-pink: #f9f2f5;
-  --draw-pink-foreground: #b35488;
-  --draw-red: #faecec;
-  --draw-red-foreground: #c4554d;
+  --bit-default: #ffffff;
+  --bit-default-foreground: #373530;
+  --bit-gray: #f1f1ef;
+  --bit-gray-foreground: #787774;
+  --bit-brown: #f3eeee;
+  --bit-brown-foreground: #976d57;
+  --bit-orange: #f8ecdf;
+  --bit-orange-foreground: #cc782f;
+  --bit-yellow: #faf3dd;
+  --bit-yellow-foreground: #c29343;
+  --bit-green: #eef3ed;
+  --bit-green-foreground: #548164;
+  --bit-blue: #e9f3f7;
+  --bit-blue-foreground: #487ca5;
+  --bit-purple: #f6f3f8;
+  --bit-purple-foreground: #8a67ab;
+  --bit-pink: #f9f2f5;
+  --bit-pink-foreground: #b35488;
+  --bit-red: #faecec;
+  --bit-red-foreground: #c4554d;
   --sign-in-canvas-bg: #e4e2de;
   --sign-in-grid-line: rgba(55, 53, 48, 0.18);
   --sign-in-card-bg: rgb(255 255 255 / 0.85);
@@ -166,26 +166,26 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --draw-default: #191919;
-  --draw-default-foreground: #d4d4d4;
-  --draw-gray: #252525;
-  --draw-gray-foreground: #9b9b9b;
-  --draw-brown: #2e2724;
-  --draw-brown-foreground: #a27763;
-  --draw-orange: #36291f;
-  --draw-orange-foreground: #cb7b37;
-  --draw-yellow: #372e20;
-  --draw-yellow-foreground: #c19138;
-  --draw-green: #242b26;
-  --draw-green-foreground: #4f9768;
-  --draw-blue: #1f282d;
-  --draw-blue-foreground: #447acb;
-  --draw-purple: #2a2430;
-  --draw-purple-foreground: #865dbb;
-  --draw-pink: #2e2328;
-  --draw-pink-foreground: #ba4a78;
-  --draw-red: #332523;
-  --draw-red-foreground: #be524b;
+  --bit-default: #191919;
+  --bit-default-foreground: #d4d4d4;
+  --bit-gray: #252525;
+  --bit-gray-foreground: #9b9b9b;
+  --bit-brown: #2e2724;
+  --bit-brown-foreground: #a27763;
+  --bit-orange: #36291f;
+  --bit-orange-foreground: #cb7b37;
+  --bit-yellow: #372e20;
+  --bit-yellow-foreground: #c19138;
+  --bit-green: #242b26;
+  --bit-green-foreground: #4f9768;
+  --bit-blue: #1f282d;
+  --bit-blue-foreground: #447acb;
+  --bit-purple: #2a2430;
+  --bit-purple-foreground: #865dbb;
+  --bit-pink: #2e2328;
+  --bit-pink-foreground: #ba4a78;
+  --bit-red: #332523;
+  --bit-red-foreground: #be524b;
   --sign-in-canvas-bg: #191919;
   --sign-in-grid-line: rgba(255, 255, 255, 0.1);
   --sign-in-card-bg: rgb(37 37 37 / 0.9);
@@ -218,7 +218,7 @@
   textarea:-webkit-autofill,
   select:-webkit-autofill {
     box-shadow: 0 0 0 1000px
-      color-mix(in oklab, var(--color-draw-orange) 80%, transparent) inset;
+      color-mix(in oklab, var(--color-bit-orange) 80%, transparent) inset;
     -webkit-text-fill-color: inherit;
     transition: background-color 9999s ease-in-out 0s;
   }
@@ -227,7 +227,7 @@
   textarea:-webkit-autofill:focus,
   select:-webkit-autofill:focus {
     box-shadow: 0 0 0 1000px
-      color-mix(in oklab, var(--color-draw-orange) 80%, transparent) inset;
+      color-mix(in oklab, var(--color-bit-orange) 80%, transparent) inset;
   }
 }
 

@@ -1,7 +1,7 @@
 import { OrderedExcalidrawElement } from "@excalidraw/excalidraw/element/types"
 import { SerializedAppState } from "../types"
 
-const DRAFT_KEY_PREFIX = "draw:draft:v1:"
+const DRAFT_KEY_PREFIX = "bitarium:draft:v1:"
 const MAX_DRAFT_AGE_MS = 1000 * 60 * 60 * 24 * 7
 
 type LocalDraftRecord = {

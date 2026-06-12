@@ -1,4 +1,4 @@
 {
-  "name": "draw",
+  "name": "bitarium",
   "script": "dev:frontend:app"
 }

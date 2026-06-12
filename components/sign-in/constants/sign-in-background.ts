@@ -1,4 +1,4 @@
-export const SIGN_IN_BACKGROUND_STORAGE_KEY = "draw:sign-in-background:v1"
+export const SIGN_IN_BACKGROUND_STORAGE_KEY = "bitarium:sign-in-background:v1"
 
 export type SignInBackgroundId = "gray" | "black"
 

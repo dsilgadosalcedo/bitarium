@@ -1,10 +1,10 @@
 # Architecture Documentation
 
-This document describes the architecture, component hierarchy, data flow, and design decisions for the Draw application.
+This document describes the architecture, component hierarchy, data flow, and design decisions for the Bitarium application.
 
 ## Overview
 
-Draw is a collaborative drawing application built with:
+Bitarium is a collaborative drawing application built with:
 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript
 - **Backend**: Convex (database, real-time sync, authentication)

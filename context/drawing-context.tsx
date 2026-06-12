@@ -10,7 +10,7 @@ interface DrawingContextType {
 
 const DrawingContext = createContext<DrawingContextType | undefined>(undefined)
 
-const CURRENT_DRAWING_STORAGE_KEY = "draw:currentDrawingId:v1"
+const CURRENT_DRAWING_STORAGE_KEY = "bitarium:currentDrawingId:v1"
 
 export const DrawingProvider = ({ children }: { children: ReactNode }) => {
   const [currentDrawingId, setCurrentDrawingId] = useState<string | null>(

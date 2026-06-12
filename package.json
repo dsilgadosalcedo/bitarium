@@ -1,5 +1,5 @@
 {
-  "name": "draw",
+  "name": "bitarium",
   "version": "0.2.0",
   "description": "A modern, collaborative drawing application built with Excalidraw, Next.js, and Convex",
   "license": "MIT",
@@ -16,7 +16,7 @@
   "author": "David Silgado Salcedo <dsilgadosalcedo@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dsilgadosalcedo/draw"
+    "url": "https://github.com/dsilgadosalcedo/bitarium"
   },
   "packageManager": "pnpm@11.1.1",
   "engines": {
@@ -86,7 +86,7 @@
     "vitest": "^4.1.8"
   },
   "portless": {
-    "name": "draw",
+    "name": "bitarium",
     "script": "dev:frontend:app"
   },
   "pnpm": {
