@@ -8,10 +8,10 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
+import type * as collaborators from "../collaborators.js";
 import type * as drawings from "../drawings.js";
 import type * as folders from "../folders.js";
-import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as validators_excalidraw_validators from "../validators/excalidraw_validators.js";
 
 import type {
@@ -21,10 +21,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
+  collaborators: typeof collaborators;
   drawings: typeof drawings;
   folders: typeof folders;
-  http: typeof http;
+  "lib/auth": typeof lib_auth;
   "validators/excalidraw_validators": typeof validators_excalidraw_validators;
 }>;
 

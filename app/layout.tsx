@@ -11,7 +11,7 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME
 } from "@/lib/seo"
-import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server"
+import { ClerkProvider } from "@clerk/nextjs"
 
 import "../styles/globals.css"
 
@@ -54,15 +54,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ConvexAuthNextjsServerProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
-        >
-          <SiteJsonLd />
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+      >
+        <SiteJsonLd />
+        <ClerkProvider>
           <ConvexClientProvider>{children}</ConvexClientProvider>
-        </body>
-      </html>
-    </ConvexAuthNextjsServerProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   )
 }

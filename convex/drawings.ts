@@ -8,7 +8,7 @@ import {
   internalAction
 } from "./_generated/server"
 import type { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server"
-import { getAuthUserId } from "@convex-dev/auth/server"
+import { getUserId, requireUserId } from "./lib/auth"
 import { Id, Doc } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
 import {
@@ -205,7 +205,7 @@ async function loadDrawingAndRole(
     .withIndex("by_drawingId", (q) => q.eq("drawingId", drawingId))
     .first()
 
-  if (!drawing || drawing.isActive === false) {
+  if (!drawing || !drawing.isActive) {
     return { drawing: drawing ?? null, role: null }
   }
 
@@ -225,10 +225,6 @@ async function loadDrawingAndRole(
   }
 
   return { drawing, role: null }
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase()
 }
 
 // Internal mutation to update user storage
@@ -253,7 +249,7 @@ export const save = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -265,7 +261,7 @@ export const save = mutation({
       userIdString
     )
 
-    if (existing && existing.isActive === false) {
+    if (existing && !existing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -328,7 +324,7 @@ export const saveWithFiles = action({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -483,7 +479,7 @@ export const get = query({
     v.null()
   ),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return null
     }
@@ -495,7 +491,7 @@ export const get = query({
       userIdString
     )
 
-    if (!drawing || drawing.isActive === false || role === null) {
+    if (!drawing || !drawing.isActive || role === null) {
       return null
     }
 
@@ -529,7 +525,7 @@ export const list = query({
     })
   ),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return []
     }
@@ -541,9 +537,7 @@ export const list = query({
       .order("desc")
       .collect()
 
-    // Filter to only return active drawings (isActive !== false)
-    // This includes drawings where isActive is true or undefined (backwards compatibility)
-    let activeDrawings = drawings.filter((d) => d.isActive !== false)
+    let activeDrawings = drawings.filter((d) => d.isActive)
 
     // Filter by folderId if provided
     if (args.folderId !== undefined) {
@@ -581,7 +575,7 @@ export const listShared = query({
     })
   ),
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return []
     }
@@ -608,9 +602,7 @@ export const listShared = query({
           .withIndex("by_drawingId", (q) => q.eq("drawingId", drawingId))
           .first()
 
-        return drawing && drawing.isActive !== false
-          ? [drawingId, drawing]
-          : null
+        return drawing?.isActive === true ? [drawingId, drawing] : null
       })
     )
     const drawingsById = new Map(
@@ -654,13 +646,12 @@ export const listCollaborators = query({
   returns: v.array(
     v.object({
       collaboratorUserId: v.string(),
-      email: v.optional(v.string()),
-      name: v.optional(v.string()),
+      email: v.string(),
       addedByUserId: v.string()
     })
   ),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return []
     }
@@ -672,7 +663,7 @@ export const listCollaborators = query({
       userIdString
     )
 
-    if (!drawing || drawing.isActive === false || role !== "owner") {
+    if (!drawing || !drawing.isActive || role !== "owner") {
       return []
     }
 
@@ -681,26 +672,11 @@ export const listCollaborators = query({
       .withIndex("by_drawingId", (q) => q.eq("drawingId", args.drawingId))
       .collect()
 
-    const uniqueCollaboratorIds = [
-      ...new Set(collaborators.map((entry) => entry.collaboratorUserId))
-    ]
-    const userResults = await Promise.all(
-      uniqueCollaboratorIds.map(async (collaboratorUserId) => {
-        const userDoc = await ctx.db.get(collaboratorUserId as Id<"users">)
-        return [collaboratorUserId, userDoc as Doc<"users"> | null] as const
-      })
-    )
-    const usersById = new Map(userResults)
-
-    return collaborators.map((entry) => {
-      const user = usersById.get(entry.collaboratorUserId) ?? null
-      return {
-        collaboratorUserId: entry.collaboratorUserId,
-        email: user?.email,
-        name: user?.name,
-        addedByUserId: entry.addedByUserId
-      }
-    })
+    return collaborators.map((entry) => ({
+      collaboratorUserId: entry.collaboratorUserId,
+      email: entry.collaboratorEmail,
+      addedByUserId: entry.addedByUserId
+    }))
   }
 })
 
@@ -708,7 +684,7 @@ export const getLatest = query({
   args: {},
   returns: v.union(v.string(), v.null()),
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return null
     }
@@ -725,28 +701,22 @@ export const getLatest = query({
   }
 })
 
-export const addCollaboratorByEmail = mutation({
+export const insertCollaborator = internalMutation({
   args: {
     drawingId: v.string(),
-    email: v.string()
+    ownerUserId: v.string(),
+    collaboratorUserId: v.string(),
+    collaboratorEmail: v.string()
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
-    if (userId === null) {
-      throw new Error("Unauthorized")
-    }
-
-    const userIdString = String(userId)
-    const normalizedEmail = normalizeEmail(args.email)
-
     const { drawing, role } = await loadDrawingAndRole(
       ctx,
       args.drawingId,
-      userIdString
+      args.ownerUserId
     )
 
-    if (!drawing || drawing.isActive === false) {
+    if (!drawing || !drawing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -754,25 +724,16 @@ export const addCollaboratorByEmail = mutation({
       throw new Error("Only the owner can share this drawing")
     }
 
-    const targetUser = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", normalizedEmail))
-      .first()
-
-    if (!targetUser) {
-      throw new Error("User not found")
-    }
-
-    const targetUserId = String(targetUser._id)
-
-    if (targetUserId === userIdString) {
+    if (args.collaboratorUserId === args.ownerUserId) {
       throw new Error("You cannot share with yourself")
     }
 
     const existingCollaborator = await ctx.db
       .query("drawingCollaborators")
       .withIndex("by_collaborator_and_drawingId", (q) =>
-        q.eq("collaboratorUserId", targetUserId).eq("drawingId", args.drawingId)
+        q
+          .eq("collaboratorUserId", args.collaboratorUserId)
+          .eq("drawingId", args.drawingId)
       )
       .first()
 
@@ -782,8 +743,9 @@ export const addCollaboratorByEmail = mutation({
 
     await ctx.db.insert("drawingCollaborators", {
       drawingId: args.drawingId,
-      collaboratorUserId: targetUserId,
-      addedByUserId: userIdString
+      collaboratorUserId: args.collaboratorUserId,
+      collaboratorEmail: args.collaboratorEmail,
+      addedByUserId: args.ownerUserId
     })
 
     return null
@@ -797,7 +759,7 @@ export const removeCollaborator = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -809,7 +771,7 @@ export const removeCollaborator = mutation({
       userIdString
     )
 
-    if (!drawing || drawing.isActive === false) {
+    if (!drawing || !drawing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -845,7 +807,7 @@ export const leaveCollaboration = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -880,7 +842,7 @@ export const updateName = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -898,7 +860,7 @@ export const updateName = mutation({
       userIdString
     )
 
-    if (!drawing || drawing.isActive === false) {
+    if (!drawing || !drawing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -920,7 +882,7 @@ export const remove = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -933,7 +895,7 @@ export const remove = mutation({
       )
       .first()
 
-    if (!existing || existing.isActive === false) {
+    if (!existing || !existing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -963,7 +925,7 @@ export const getUserStorage = query({
     totalBytes: v.number()
   }),
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return { totalBytes: 0 }
     }
@@ -997,7 +959,7 @@ export const getDrawingWithFiles = internalQuery({
         _id: v.id("drawings"),
         userId: v.string(),
         files: v.optional(v.record(v.string(), v.id("_storage"))),
-        isActive: v.optional(v.boolean())
+        isActive: v.boolean()
       })
     )
   }),
@@ -1011,7 +973,7 @@ export const getDrawingWithFiles = internalQuery({
       return { status: "not_found" as const, drawing: undefined }
     }
 
-    if (drawing.isActive === false) {
+    if (!drawing.isActive) {
       return {
         status: "inactive" as const,
         drawing: {

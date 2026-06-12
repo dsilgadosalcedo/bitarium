@@ -8,7 +8,7 @@ describe("rewriteRequestForPublicOrigin", () => {
   })
 
   it("returns the original request when PORTLESS_URL is unset", () => {
-    const request = new NextRequest("http://127.0.0.1:4132/api/auth", {
+    const request = new NextRequest("http://127.0.0.1:4132/sign-in", {
       method: "POST",
       headers: {
         host: "127.0.0.1:4132",
@@ -22,7 +22,7 @@ describe("rewriteRequestForPublicOrigin", () => {
   it("rewrites the internal URL and host to the public portless origin", () => {
     process.env.PORTLESS_URL = "https://draw.localhost"
 
-    const request = new NextRequest("http://127.0.0.1:4132/api/auth", {
+    const request = new NextRequest("http://127.0.0.1:4132/sign-in", {
       method: "POST",
       headers: {
         host: "127.0.0.1:4132",
@@ -32,7 +32,7 @@ describe("rewriteRequestForPublicOrigin", () => {
 
     const rewritten = rewriteRequestForPublicOrigin(request)
 
-    expect(rewritten.url).toBe("https://draw.localhost/api/auth")
+    expect(rewritten.url).toBe("https://draw.localhost/sign-in")
     expect(rewritten.headers.get("host")).toBe("draw.localhost")
   })
 })

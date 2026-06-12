@@ -22,6 +22,7 @@ interface SignInGridPanelProps {
   panelLayout: SignInPanelLayout
   flow: AuthFlow
   loading: boolean
+  pendingVerification: AuthFlow | null
   onSubmit: (formData: FormData) => void
 }
 
@@ -29,6 +30,7 @@ export function SignInGridPanel({
   panelLayout,
   flow,
   loading,
+  pendingVerification,
   onSubmit
 }: SignInGridPanelProps) {
   const sectionLayout = getSignInPanelSectionLayout(panelLayout.panelCols)
@@ -60,6 +62,7 @@ export function SignInGridPanel({
       <SignInForm
         flow={flow}
         loading={loading}
+        pendingVerification={pendingVerification}
         onSubmit={onSubmit}
         sectionLayout={sectionLayout}
         fieldClassName={gridFieldClass}

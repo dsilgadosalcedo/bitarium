@@ -9,7 +9,8 @@ import { type AuthFlow } from "../types"
 
 export function SignIn({ flow }: { flow: AuthFlow }) {
   const isHydrated = useIsClientHydrated()
-  const { error, loading, handleSubmit } = useSignInForm(flow)
+  const { error, loading, pendingVerification, handleSubmit } =
+    useSignInForm(flow)
   const panelLayout = usePanelLayout()
 
   if (!isHydrated) {
@@ -22,6 +23,7 @@ export function SignIn({ flow }: { flow: AuthFlow }) {
         panelLayout={panelLayout}
         flow={flow}
         loading={loading}
+        pendingVerification={pendingVerification}
         onSubmit={handleSubmit}
       />
       <SignInErrorZone panelLayout={panelLayout} error={error} />

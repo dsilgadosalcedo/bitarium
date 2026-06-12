@@ -3,12 +3,12 @@ import { getUserFriendlyError } from "./get-user-friendly-error"
 
 describe("getUserFriendlyError", () => {
   it("maps invalid credentials to a clear sign-in message", () => {
-    expect(getUserFriendlyError(new Error("InvalidSecret"), "signIn")).toBe(
-      "Wrong username or password."
-    )
-    expect(getUserFriendlyError(new Error("InvalidAccountId"), "signIn")).toBe(
-      "Wrong username or password."
-    )
+    expect(
+      getUserFriendlyError(new Error("form_password_incorrect"), "signIn")
+    ).toBe("Wrong username or password.")
+    expect(
+      getUserFriendlyError(new Error("form_identifier_not_found"), "signIn")
+    ).toBe("Wrong username or password.")
     expect(
       getUserFriendlyError(new Error("Invalid credentials"), "signIn")
     ).toBe("Wrong username or password.")
@@ -16,16 +16,13 @@ describe("getUserFriendlyError", () => {
 
   it("maps duplicate accounts during sign up", () => {
     expect(
-      getUserFriendlyError(
-        new Error("Account test@example.com already exists"),
-        "signUp"
-      )
+      getUserFriendlyError(new Error("form_identifier_exists"), "signUp")
     ).toBe("That username is already taken. Sign in instead.")
   })
 
-  it("reads nested convex auth errors", () => {
-    const error = new Error("[CONVEX A(auth:signIn)] Server Error")
-    error.cause = new Error("InvalidSecret")
+  it("reads nested clerk errors", () => {
+    const error = new Error("Sign in failed")
+    error.cause = new Error("form_password_incorrect")
 
     expect(getUserFriendlyError(error, "signIn")).toBe(
       "Wrong username or password."
@@ -33,8 +30,8 @@ describe("getUserFriendlyError", () => {
   })
 
   it("maps rate limiting", () => {
-    expect(
-      getUserFriendlyError(new Error("TooManyFailedAttempts"), "signIn")
-    ).toBe("Too many failed attempts. Please wait a moment and try again.")
+    expect(getUserFriendlyError(new Error("too_many_requests"), "signIn")).toBe(
+      "Too many failed attempts. Please wait a moment and try again."
+    )
   })
 })

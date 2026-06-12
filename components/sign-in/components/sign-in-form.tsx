@@ -8,6 +8,7 @@ import { SignInFormFields } from "./sign-in-form-fields"
 interface SignInFormProps {
   flow: AuthFlow
   loading: boolean
+  pendingVerification: AuthFlow | null
   onSubmit: (formData: FormData) => void
   sectionLayout: SignInPanelSectionLayout
   fieldClassName: string
@@ -17,6 +18,7 @@ interface SignInFormProps {
 export function SignInForm({
   flow,
   loading,
+  pendingVerification,
   onSubmit,
   sectionLayout,
   fieldClassName,
@@ -36,6 +38,7 @@ export function SignInForm({
     >
       <SignInFormFields
         flow={flow}
+        pendingVerification={pendingVerification}
         fieldClassName={fieldClassName}
         columnSpan={columnSpan}
         passwordInputColumn={passwordInputColumn}
@@ -44,6 +47,13 @@ export function SignInForm({
         passwordGridRow={rows.password}
         hintGridRow={rows.passwordHint}
       />
+
+      {flow === "signUp" && !pendingVerification ? (
+        <div
+          id="clerk-captcha"
+          style={{ gridColumn: columnSpan, gridRow: rows.passwordHint }}
+        />
+      ) : null}
 
       <div
         className="h-full w-full"
@@ -62,6 +72,8 @@ export function SignInForm({
               <Loader2Icon className="size-4 animate-spin" />
               Loading
             </>
+          ) : pendingVerification ? (
+            "Verify"
           ) : flow === "signIn" ? (
             "Sign in"
           ) : (

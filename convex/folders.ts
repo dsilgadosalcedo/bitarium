@@ -6,7 +6,7 @@ import {
   internalMutation,
   internalAction
 } from "./_generated/server"
-import { getAuthUserId } from "@convex-dev/auth/server"
+import { getUserId } from "./lib/auth"
 import { Id } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
 
@@ -23,7 +23,7 @@ export const list = query({
     })
   ),
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       return []
     }
@@ -35,8 +35,7 @@ export const list = query({
       .order("desc")
       .collect()
 
-    // Filter to only return active folders (isActive !== false)
-    const activeFolders = folders.filter((f) => f.isActive !== false)
+    const activeFolders = folders.filter((f) => f.isActive)
 
     return activeFolders.map((f) => ({
       _id: f._id,
@@ -59,7 +58,7 @@ export const create = mutation({
     folderId: v.string()
   }),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -92,7 +91,7 @@ export const updateName = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -114,7 +113,7 @@ export const updateName = mutation({
       )
       .first()
 
-    if (!existing || existing.isActive === false) {
+    if (!existing || !existing.isActive) {
       throw new Error("Folder not found")
     }
 
@@ -134,7 +133,7 @@ export const updateAppearance = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -147,7 +146,7 @@ export const updateAppearance = mutation({
       )
       .first()
 
-    if (!existing || existing.isActive === false) {
+    if (!existing || !existing.isActive) {
       throw new Error("Folder not found")
     }
 
@@ -166,7 +165,7 @@ export const remove = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -179,7 +178,7 @@ export const remove = mutation({
       )
       .first()
 
-    if (!existing || existing.isActive === false) {
+    if (!existing || !existing.isActive) {
       throw new Error("Folder not found")
     }
 
@@ -194,7 +193,7 @@ export const remove = mutation({
       .withIndex("by_folderId", (q) => q.eq("folderId", args.folderId))
       .collect()
 
-    const activeDrawings = drawings.filter((d) => d.isActive !== false)
+    const activeDrawings = drawings.filter((d) => d.isActive)
 
     // Mark all drawings as inactive
     for (const drawing of activeDrawings) {
@@ -263,7 +262,7 @@ export const moveDrawingToFolder = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx)
+    const userId = await getUserId(ctx)
     if (userId === null) {
       throw new Error("Unauthorized")
     }
@@ -278,7 +277,7 @@ export const moveDrawingToFolder = mutation({
       )
       .first()
 
-    if (!drawing || drawing.isActive === false) {
+    if (!drawing || !drawing.isActive) {
       throw new Error("Drawing not found")
     }
 
@@ -292,7 +291,7 @@ export const moveDrawingToFolder = mutation({
         )
         .first()
 
-      if (!folder || folder.isActive === false) {
+      if (!folder || !folder.isActive) {
         throw new Error("Folder not found")
       }
     }

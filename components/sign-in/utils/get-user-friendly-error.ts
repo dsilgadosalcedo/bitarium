@@ -30,8 +30,19 @@ function collectErrorMessages(error: unknown): string[] {
       if ("message" in value && typeof value.message === "string") {
         messages.push(value.message)
       }
+      if ("longMessage" in value && typeof value.longMessage === "string") {
+        messages.push(value.longMessage)
+      }
+      if ("code" in value && typeof value.code === "string") {
+        messages.push(value.code)
+      }
       if ("data" in value && typeof value.data === "string") {
         messages.push(value.data)
+      }
+      if ("errors" in value && Array.isArray(value.errors)) {
+        for (const nestedError of value.errors) {
+          visit(nestedError)
+        }
       }
     }
   }
@@ -43,14 +54,14 @@ function collectErrorMessages(error: unknown): string[] {
 export function getUserFriendlyError(error: unknown, flow: AuthFlow): string {
   const normalizedMessage = collectErrorMessages(error).join(" ").toLowerCase()
 
-  if (normalizedMessage.includes("toomanyfailedattempts")) {
+  if (normalizedMessage.includes("too_many_requests")) {
     return "Too many failed attempts. Please wait a moment and try again."
   }
 
   if (
-    normalizedMessage.includes("invalidsecret") ||
-    normalizedMessage.includes("invalidaccountid") ||
     normalizedMessage.includes("invalid credentials") ||
+    normalizedMessage.includes("form_password_incorrect") ||
+    normalizedMessage.includes("form_identifier_not_found") ||
     normalizedMessage.includes("invalid email") ||
     normalizedMessage.includes("invalid password") ||
     normalizedMessage.includes("wrong password") ||
@@ -64,6 +75,7 @@ export function getUserFriendlyError(error: unknown, flow: AuthFlow): string {
 
   if (
     normalizedMessage.includes("user already exists") ||
+    normalizedMessage.includes("form_identifier_exists") ||
     normalizedMessage.includes("already exists") ||
     normalizedMessage.includes("account already exists")
   ) {

@@ -1,10 +1,10 @@
 "use client"
 
-import { useMutation, useQuery } from "convex/react"
+import { useAction, useMutation, useQuery } from "convex/react"
 import { useCallback, useMemo, useState } from "react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useAuthActions } from "@convex-dev/auth/react"
+import { useClerk } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 
 import { SIGN_IN_PATH } from "@/lib/auth-routes"
@@ -35,7 +35,7 @@ export default function Sidebar() {
   const userStorage = useQuery(api.drawings.getUserStorage)
   const updateName = useMutation(api.drawings.updateName)
   const removeDrawing = useMutation(api.drawings.remove)
-  const addCollaborator = useMutation(api.drawings.addCollaboratorByEmail)
+  const addCollaborator = useAction(api.collaborators.addCollaboratorByEmail)
   const removeCollaborator = useMutation(api.drawings.removeCollaborator)
   const leaveCollaboration = useMutation(api.drawings.leaveCollaboration)
   const createFolder = useMutation(api.folders.create)
@@ -43,7 +43,7 @@ export default function Sidebar() {
   const updateFolderAppearance = useMutation(api.folders.updateAppearance)
   const removeFolder = useMutation(api.folders.remove)
   const moveDrawingToFolder = useMutation(api.folders.moveDrawingToFolder)
-  const { signOut } = useAuthActions()
+  const { signOut } = useClerk()
   const router = useRouter()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareTargetDrawingId, setShareTargetDrawingId] = useState<
@@ -58,9 +58,7 @@ export default function Sidebar() {
     shareDialogOpen && shareTargetDrawingId
       ? { drawingId: shareTargetDrawingId }
       : "skip"
-  ) as
-    | { collaboratorUserId: string; email?: string; name?: string }[]
-    | undefined
+  ) as { collaboratorUserId: string; email: string }[] | undefined
   const shareTargetName = useMemo(() => {
     if (!shareTargetDrawingId || !allDrawings) return null
     return (

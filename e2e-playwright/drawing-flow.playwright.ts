@@ -1,25 +1,56 @@
+import { createClerkClient } from "@clerk/backend"
+import { clerk, setupClerkTestingToken } from "@clerk/testing/playwright"
 import { test, expect, type Page } from "@playwright/test"
 
-const TEST_PASSWORD = "password123"
+const TEST_PASSWORD = "DrawE2eTest123!"
+
+function uniqueUsername(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
 
 function uniqueEmail(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@example.com`
 }
 
+async function ensureTestUser(username: string, password: string) {
+  const secretKey = process.env.CLERK_SECRET_KEY
+  if (!secretKey) {
+    throw new Error("CLERK_SECRET_KEY is required for Playwright auth setup")
+  }
+
+  const clerkClient = createClerkClient({ secretKey })
+  const existing = await clerkClient.users.getUserList({
+    username: [username],
+    limit: 1
+  })
+
+  if (existing.data[0]) {
+    return
+  }
+
+  await clerkClient.users.createUser({ username, password })
+}
+
 async function signUpAndOpenWorkspace(
   page: Page,
-  email: string,
+  username: string,
   password: string = TEST_PASSWORD
 ) {
-  await page.goto("/sign-up")
+  await ensureTestUser(username, password)
+  await setupClerkTestingToken({ page })
+  await page.goto("/sign-in")
 
-  await page.locator('input[name="email"]').fill(email)
-  await page.locator('input[name="password"]').fill(password)
-  await page.getByRole("button", { name: /^sign up$/i }).click()
-
-  await page.waitForURL((url) => !/^\/sign-(in|up)/.test(url.pathname), {
-    timeout: 30000
+  await clerk.signIn({
+    page,
+    signInParams: {
+      strategy: "password",
+      identifier: username,
+      password
+    }
   })
+
+  await page.goto("/app")
+  await page.waitForURL((url) => url.pathname === "/app", { timeout: 30000 })
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 30000 })
   const expandSidebarButton = page.getByRole("button", {
     name: "Expand sidebar"
@@ -64,12 +95,12 @@ test.describe.configure({ mode: "serial" })
 
 test.describe("Drawing Flow", () => {
   test("should create a new drawing", async ({ page }) => {
-    await signUpAndOpenWorkspace(page, uniqueEmail("e2e_draw_create"))
+    await signUpAndOpenWorkspace(page, uniqueUsername("e2e_draw_create"))
     await expect(page.locator("canvas").first()).toBeVisible()
   })
 
   test("should save drawing changes", async ({ page }) => {
-    await signUpAndOpenWorkspace(page, uniqueEmail("e2e_draw_save"))
+    await signUpAndOpenWorkspace(page, uniqueUsername("e2e_draw_save"))
 
     const nameInput = page.getByLabel("Drawing name")
     await expect(nameInput).toBeVisible({ timeout: 10000 })
@@ -79,7 +110,7 @@ test.describe("Drawing Flow", () => {
   })
 
   test("should display drawing name", async ({ page }) => {
-    await signUpAndOpenWorkspace(page, uniqueEmail("e2e_draw_name"))
+    await signUpAndOpenWorkspace(page, uniqueUsername("e2e_draw_name"))
     await expect(page.getByLabel("Drawing name")).toBeVisible({
       timeout: 10000
     })
@@ -90,9 +121,9 @@ test.describe("Collaboration", () => {
   test("should show an error when sharing with an unknown collaborator", async ({
     page
   }) => {
-    const ownerEmail = uniqueEmail("e2e_owner")
+    const ownerUsername = uniqueUsername("e2e_owner")
     const unknownCollaboratorEmail = uniqueEmail("e2e_unknown")
-    await signUpAndOpenWorkspace(page, ownerEmail)
+    await signUpAndOpenWorkspace(page, ownerUsername)
     await openPrimaryDrawingOptions(page)
     await page.getByRole("menuitem", { name: "Share" }).click()
 
@@ -111,7 +142,7 @@ test.describe("Collaboration", () => {
 
 test.describe("Folder Organization", () => {
   test("should create and organize folders", async ({ page }) => {
-    await signUpAndOpenWorkspace(page, uniqueEmail("e2e_folder"))
+    await signUpAndOpenWorkspace(page, uniqueUsername("e2e_folder"))
 
     await page
       .getByRole("button", { name: /new folder/i })

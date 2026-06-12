@@ -1,4 +1,10 @@
 import { defineConfig, devices } from "@playwright/test"
+import dotenv from "dotenv"
+
+dotenv.config({ path: ".env.local" })
+
+process.env.CLERK_PUBLISHABLE_KEY ??=
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 const useExistingServer = process.env.PLAYWRIGHT_USE_EXISTING_SERVER === "1"
 
@@ -21,7 +27,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:4010",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:4010",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry"
   },
@@ -29,8 +35,13 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "global setup",
+      testMatch: /global\.setup\.ts/
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] }
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["global setup"]
     }
   ],
 

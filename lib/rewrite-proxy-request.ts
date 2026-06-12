@@ -2,8 +2,7 @@ import { NextRequest } from "next/server"
 
 /**
  * Portless terminates TLS and forwards to Next.js over HTTP on an ephemeral port.
- * Convex Auth treats mismatched Origin/Host/protocol as cross-site and blocks
- * sign-in with a plain-text "Invalid origin" response.
+ * Clerk treats mismatched Origin/Host/protocol as cross-site during auth flows.
  */
 export function rewriteRequestForPublicOrigin(
   request: NextRequest
@@ -41,7 +40,7 @@ export function rewriteRequestForPublicOrigin(
 
   const rewritten = new NextRequest(publicUrl, init)
 
-  // Host is a forbidden header on construction, but Convex Auth compares it
+  // Host is a forbidden header on construction, but auth providers compare it
   // against Origin when deciding whether auth POSTs are same-origin.
   rewritten.headers.set("host", publicOrigin.host)
 

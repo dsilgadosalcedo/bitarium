@@ -11,8 +11,7 @@ import { Input } from "@/components/ui/input"
 
 type Collaborator = {
   collaboratorUserId: string
-  email?: string
-  name?: string
+  email: string
 }
 
 type ShareDialogProps = {

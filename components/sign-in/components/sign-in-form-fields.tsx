@@ -12,6 +12,7 @@ const passwordToggleClass = `flex h-full w-full cursor-pointer items-center just
 
 interface SignInFormFieldsProps {
   flow: AuthFlow
+  pendingVerification: AuthFlow | null
   fieldClassName: string
   columnSpan: string
   passwordInputColumn: string
@@ -23,6 +24,7 @@ interface SignInFormFieldsProps {
 
 export function SignInFormFields({
   flow,
+  pendingVerification,
   fieldClassName,
   columnSpan,
   passwordInputColumn,
@@ -33,6 +35,23 @@ export function SignInFormFields({
 }: SignInFormFieldsProps) {
   const [showPassword, setShowPassword] = useState(false)
 
+  if (pendingVerification) {
+    return (
+      <div style={{ gridColumn: columnSpan, gridRow: usernameGridRow }}>
+        <input
+          type="text"
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="Verification code"
+          required
+          aria-label="Verification code"
+          className={fieldClassName}
+        />
+      </div>
+    )
+  }
+
   return (
     <>
       <div style={{ gridColumn: columnSpan, gridRow: usernameGridRow }}>
@@ -42,6 +61,7 @@ export function SignInFormFields({
           placeholder="Username"
           required
           aria-label="Username"
+          autoComplete="username"
           className={fieldClassName}
         />
       </div>
@@ -56,6 +76,7 @@ export function SignInFormFields({
           minLength={MIN_PASSWORD_LENGTH}
           required
           aria-label="Password"
+          autoComplete={flow === "signUp" ? "new-password" : "current-password"}
           className={fieldClassName}
         />
       </div>
