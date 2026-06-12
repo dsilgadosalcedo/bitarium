@@ -6,10 +6,9 @@ import { useAuthActions } from "@convex-dev/auth/react"
 import { type AuthFlow } from "../types"
 import { getUserFriendlyError } from "../utils/get-user-friendly-error"
 
-export function useSignInForm() {
+export function useSignInForm(flow: AuthFlow) {
   const { signIn } = useAuthActions()
   const router = useRouter()
-  const [flow, setFlow] = useState<AuthFlow>("signIn")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -31,7 +30,7 @@ export function useSignInForm() {
         return
       }
 
-      router.push("/")
+      router.push("/app")
     } catch (error) {
       console.error("Authentication error:", error)
       setError(getUserFriendlyError(error, flow))
@@ -39,16 +38,10 @@ export function useSignInForm() {
     }
   }
 
-  const toggleFlow = () => {
-    setFlow(flow === "signIn" ? "signUp" : "signIn")
-    setError(null)
-  }
-
   return {
     flow,
     error,
     loading,
-    handleSubmit,
-    toggleFlow
+    handleSubmit
   }
 }

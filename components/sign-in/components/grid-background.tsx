@@ -122,16 +122,18 @@ function getMarkCellIndices(cols: number, rows: number) {
 function getReservedCellIndices(
   cols: number,
   rows: number,
-  panelLayout: SignInPanelLayout
+  panelLayout: SignInPanelLayout | null | undefined
 ) {
   const indices = new Set<number>(getMarkCellIndices(cols, rows))
 
-  for (const { col, row } of getPanelCells(panelLayout)) {
-    indices.add(getCellIndex(col, row, cols))
-  }
+  if (panelLayout) {
+    for (const { col, row } of getPanelCells(panelLayout)) {
+      indices.add(getCellIndex(col, row, cols))
+    }
 
-  for (const { col, row } of getLoginErrorZoneCells(panelLayout)) {
-    indices.add(getCellIndex(col, row, cols))
+    for (const { col, row } of getLoginErrorZoneCells(panelLayout)) {
+      indices.add(getCellIndex(col, row, cols))
+    }
   }
 
   for (const { col, row } of getBackgroundPickerCells(cols)) {
@@ -181,7 +183,7 @@ function fillCell(
 }
 
 interface GridBackgroundProps {
-  panelLayout: SignInPanelLayout
+  panelLayout?: SignInPanelLayout | null
   canvasBackground?: string
   footerMarkHovered?: boolean
 }
@@ -346,8 +348,10 @@ export function GridBackground({
       }
       ctx.stroke()
 
-      for (const { col, row, opacity } of getPanelBorderCells(layout)) {
-        fillCell(ctx, col, row, theme.panelBorder, opacity)
+      if (layout) {
+        for (const { col, row, opacity } of getPanelBorderCells(layout)) {
+          fillCell(ctx, col, row, theme.panelBorder, opacity)
+        }
       }
 
       for (const { col, row } of getBitariumLogoBitCells()) {

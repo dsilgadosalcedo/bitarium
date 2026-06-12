@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname)
   },
   allowedDevOrigins: ["bitarium.localhost", "draw.localhost"],
+  async redirects() {
+    return [
+      {
+        source: "/signin",
+        destination: "/sign-in",
+        permanent: true
+      }
+    ]
+  },
   async headers() {
     return [
       {

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuthActions } from "@convex-dev/auth/react"
 import { useRouter } from "next/navigation"
 
+import { SIGN_IN_PATH } from "@/lib/auth-routes"
 import { api } from "../../../convex/_generated/api"
 import { useDrawing } from "../../../context/drawing-context"
 import { StorageFooter } from "./storage-footer"
@@ -269,7 +270,7 @@ export default function Sidebar() {
   const handleSignOut = useCallback(async () => {
     try {
       await signOut()
-      router.push("/signin")
+      router.push(SIGN_IN_PATH)
     } catch (error) {
       console.error("Failed to sign out:", error)
     }

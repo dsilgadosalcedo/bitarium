@@ -3,18 +3,27 @@ import {
   createRouteMatcher,
   nextjsMiddlewareRedirect
 } from "@convex-dev/auth/nextjs/server"
+import { AUTH_PATHS, SIGN_IN_PATH } from "@/lib/auth-routes"
 import { rewriteRequestForPublicOrigin } from "@/lib/rewrite-proxy-request"
 
-const isSignInPage = createRouteMatcher(["/signin"])
-const isProtectedRoute = createRouteMatcher(["/"])
+const isAuthPage = createRouteMatcher(AUTH_PATHS)
+const isAppPage = createRouteMatcher(["/app"])
+const isLandingPage = createRouteMatcher(["/"])
 
 const authMiddleware = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
-    if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
-      return nextjsMiddlewareRedirect(request, "/")
+    const isAuthenticated = await convexAuth.isAuthenticated()
+
+    if (isAuthPage(request) && isAuthenticated) {
+      return nextjsMiddlewareRedirect(request, "/app")
     }
-    if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-      return nextjsMiddlewareRedirect(request, "/signin")
+
+    if (isLandingPage(request) && isAuthenticated) {
+      return nextjsMiddlewareRedirect(request, "/app")
+    }
+
+    if (isAppPage(request) && !isAuthenticated) {
+      return nextjsMiddlewareRedirect(request, SIGN_IN_PATH)
     }
   }
 )

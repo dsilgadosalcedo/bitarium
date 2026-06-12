@@ -23,15 +23,13 @@ interface SignInGridPanelProps {
   flow: AuthFlow
   loading: boolean
   onSubmit: (formData: FormData) => void
-  onToggleFlow: () => void
 }
 
 export function SignInGridPanel({
   panelLayout,
   flow,
   loading,
-  onSubmit,
-  onToggleFlow
+  onSubmit
 }: SignInGridPanelProps) {
   const sectionLayout = getSignInPanelSectionLayout(panelLayout.panelCols)
   const { header, columnSpan, rows } = sectionLayout
@@ -73,7 +71,7 @@ export function SignInGridPanel({
           className="flex items-center justify-center"
           style={{ gridColumn: columnSpan, gridRow: rows.flowToggle }}
         >
-          <FlowToggle flow={flow} onToggle={onToggleFlow} />
+          <FlowToggle flow={flow} />
         </div>
 
         <div
