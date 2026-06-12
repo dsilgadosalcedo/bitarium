@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname)
   },
-  allowedDevOrigins: ["draw.localhost"],
+  allowedDevOrigins: ["bitarium.localhost", "draw.localhost"],
   async headers() {
     return [
       {
