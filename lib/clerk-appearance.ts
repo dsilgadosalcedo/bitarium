@@ -1,8 +1,8 @@
-import { shadcn } from "@clerk/ui/themes"
+import { dark } from "@clerk/ui/themes"
 
-/** Shared Clerk appearance — matches shadcn dark tokens from globals.css. */
+/** Bitarium is dark-only — use Clerk's explicit dark theme (not shadcn/CSS-variable based). */
 export const clerkAppearance = {
-  theme: shadcn
+  theme: dark
 } as const
 
 export const clerkUserButtonAppearance = {
