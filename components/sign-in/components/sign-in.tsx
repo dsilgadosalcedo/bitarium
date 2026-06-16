@@ -1,5 +1,6 @@
 "use client"
 
+import { GoogleOneTapPrompt } from "@/components/auth/google-one-tap-prompt"
 import { SignInGridPanel } from "@/components/sign-in/components/sign-in-grid-panel"
 import { SignInErrorZone } from "@/components/sign-in/components/sign-in-error-zone"
 import { useIsClientHydrated } from "../hooks/use-viewport-size"
@@ -24,6 +25,7 @@ export function SignIn({ flow }: { flow: AuthFlow }) {
 
   return (
     <div className="h-screen overflow-hidden">
+      <GoogleOneTapPrompt />
       <SignInGridPanel
         panelLayout={panelLayout}
         flow={flow}
