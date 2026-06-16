@@ -1,14 +1,17 @@
 "use client"
 
 import { Loader2Icon } from "lucide-react"
-import { type SignInPanelSectionLayout } from "../constants/grid-layout"
-import { type AuthFlow } from "../types"
+import {
+  getSignInFlowRows,
+  type SignInPanelSectionLayout
+} from "../constants/grid-layout"
+import { type AuthFlow, type AuthLoadingAction } from "../types"
 import { GoogleIcon } from "./google-icon"
 import { SignInFormFields } from "./sign-in-form-fields"
 
 interface SignInFormProps {
   flow: AuthFlow
-  loading: boolean
+  loadingAction: AuthLoadingAction
   pendingVerification: AuthFlow | null
   onSubmit: (formData: FormData) => void
   onGoogleAuth: () => void
@@ -20,7 +23,7 @@ interface SignInFormProps {
 
 export function SignInForm({
   flow,
-  loading,
+  loadingAction,
   pendingVerification,
   onSubmit,
   onGoogleAuth,
@@ -38,8 +41,10 @@ export function SignInForm({
     rows
   } = sectionLayout
 
-  const submitRow = flow === "signUp" ? rows.submitSignUp : rows.submitSignIn
+  const flowRows = getSignInFlowRows(flow, rows)
+  const submitRow = flowRows.submit
   const passwordLabel = flow === "signIn" ? "Sign in" : "Sign up"
+  const isLoading = loadingAction !== null
 
   return (
     <form
@@ -65,7 +70,8 @@ export function SignInForm({
       {flow === "signUp" && !pendingVerification ? (
         <div
           id="clerk-captcha"
-          style={{ gridColumn: columnSpan, gridRow: rows.passwordHint }}
+          className="flex items-center justify-center"
+          style={{ gridColumn: columnSpan, gridRow: rows.captcha }}
         />
       ) : null}
 
@@ -76,10 +82,10 @@ export function SignInForm({
         >
           <button
             type="submit"
-            disabled={loading}
+            disabled={isLoading}
             className={`gap-2 ${buttonClassName}`}
           >
-            {loading ? (
+            {loadingAction === "verify" ? (
               <>
                 <Loader2Icon className="size-4 animate-spin" />
                 Loading
@@ -97,11 +103,11 @@ export function SignInForm({
           >
             <button
               type="button"
-              disabled={loading}
+              disabled={isLoading}
               onClick={onGoogleAuth}
               className={`gap-2 ${googleButtonClassName}`}
             >
-              {loading ? (
+              {loadingAction === "google" ? (
                 <Loader2Icon className="size-4 animate-spin" />
               ) : (
                 <>
@@ -118,10 +124,10 @@ export function SignInForm({
           >
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className={`gap-2 ${buttonClassName}`}
             >
-              {loading ? (
+              {loadingAction === "password" ? (
                 <>
                   <Loader2Icon className="size-4 animate-spin" />
                   Loading

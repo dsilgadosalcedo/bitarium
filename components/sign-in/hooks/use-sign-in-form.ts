@@ -4,7 +4,7 @@ import { useSignIn, useSignUp } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { SSO_CALLBACK_PATH } from "@/lib/auth-routes"
-import { type AuthFlow } from "../types"
+import { type AuthFlow, type AuthLoadingAction } from "../types"
 import { getUserFriendlyError } from "../utils/get-user-friendly-error"
 
 export function useSignInForm(flow: AuthFlow) {
@@ -12,7 +12,7 @@ export function useSignInForm(flow: AuthFlow) {
   const { signUp } = useSignUp()
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loadingAction, setLoadingAction] = useState<AuthLoadingAction>(null)
   const [pendingVerification, setPendingVerification] =
     useState<AuthFlow | null>(null)
 
@@ -21,7 +21,7 @@ export function useSignInForm(flow: AuthFlow) {
   }
 
   const handleGoogleAuth = async () => {
-    setLoading(true)
+    setLoadingAction("google")
     setError(null)
 
     try {
@@ -61,12 +61,12 @@ export function useSignInForm(flow: AuthFlow) {
     } catch (authError) {
       setError(getUserFriendlyError(authError, flow))
     } finally {
-      setLoading(false)
+      setLoadingAction(null)
     }
   }
 
   const handleSubmit = async (formData: FormData) => {
-    setLoading(true)
+    setLoadingAction(pendingVerification ? "verify" : "password")
     setError(null)
 
     try {
@@ -198,14 +198,14 @@ export function useSignInForm(flow: AuthFlow) {
     } catch (authError) {
       setError(getUserFriendlyError(authError, flow))
     } finally {
-      setLoading(false)
+      setLoadingAction(null)
     }
   }
 
   return {
     flow,
     error,
-    loading,
+    loadingAction,
     pendingVerification,
     handleSubmit,
     handleGoogleAuth

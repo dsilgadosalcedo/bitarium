@@ -12,7 +12,7 @@ export function SignIn({ flow }: { flow: AuthFlow }) {
   const isHydrated = useIsClientHydrated()
   const {
     error,
-    loading,
+    loadingAction,
     pendingVerification,
     handleSubmit,
     handleGoogleAuth
@@ -29,7 +29,7 @@ export function SignIn({ flow }: { flow: AuthFlow }) {
       <SignInGridPanel
         panelLayout={panelLayout}
         flow={flow}
-        loading={loading}
+        loadingAction={loadingAction}
         pendingVerification={pendingVerification}
         onSubmit={handleSubmit}
         onGoogleAuth={handleGoogleAuth}
