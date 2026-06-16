@@ -1,6 +1,6 @@
 "use client"
 
-import { useAction, useQuery } from "convex/react"
+import { useAction, useMutation, useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useEffect, useRef, useMemo, useCallback, useState } from "react"
 import dynamic from "next/dynamic"
@@ -35,6 +35,7 @@ const Excalidraw = dynamic(
 export default function Canvas() {
   const { currentDrawingId: drawingId } = useDrawing()
   const saveDrawing = useAction(api.drawings.saveWithFiles)
+  const saveDrawingContent = useMutation(api.drawings.saveContent)
   // Track the current drawing ID to detect drawing changes
   const lastDrawingIdRef = useRef<string | null>(null)
   const syncedFilesSignatureByDrawingRef = useRef<Map<string, string>>(
@@ -396,12 +397,20 @@ export default function Canvas() {
         const shouldSendFiles =
           filesSignature !== null && filesSignature !== lastSyncedFilesSignature
 
-        void saveDrawing({
-          drawingId: idToSave,
-          elements: [...elements],
-          appState: appStatePayload,
-          ...(shouldSendFiles ? { files } : {})
-        })
+        const savePromise = shouldSendFiles
+          ? saveDrawing({
+              drawingId: idToSave,
+              elements: [...elements],
+              appState: appStatePayload,
+              files
+            })
+          : saveDrawingContent({
+              drawingId: idToSave,
+              elements: [...elements],
+              appState: appStatePayload
+            })
+
+        void savePromise
           .then(() => {
             if (shouldSendFiles) {
               if (filesSignature === "") {
