@@ -137,7 +137,12 @@ export default function SsoCallbackPage() {
   }, [clerk, signIn, signUp, router])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--sign-in-canvas-bg,#000)] text-white/80">
+      <div
+        className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80"
+        aria-hidden="true"
+      />
+      <p className="text-sm">Finishing sign-in…</p>
       <div id="clerk-captcha" />
     </div>
   )

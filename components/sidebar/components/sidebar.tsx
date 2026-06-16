@@ -4,10 +4,6 @@ import { useAction, useMutation, useQuery } from "convex/react"
 import { useCallback, useMemo, useState } from "react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useClerk } from "@clerk/nextjs"
-import { useRouter } from "next/navigation"
-
-import { SIGN_IN_PATH } from "@/lib/auth-routes"
 import { api } from "../../../convex/_generated/api"
 import { useDrawing } from "../../../context/drawing-context"
 import { StorageFooter } from "./storage-footer"
@@ -43,8 +39,6 @@ export default function Sidebar() {
   const updateFolderAppearance = useMutation(api.folders.updateAppearance)
   const removeFolder = useMutation(api.folders.remove)
   const moveDrawingToFolder = useMutation(api.folders.moveDrawingToFolder)
-  const { signOut } = useClerk()
-  const router = useRouter()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareTargetDrawingId, setShareTargetDrawingId] = useState<
     string | null
@@ -265,15 +259,6 @@ export default function Sidebar() {
     ]
   )
 
-  const handleSignOut = useCallback(async () => {
-    try {
-      await signOut()
-      router.push(SIGN_IN_PATH)
-    } catch (error) {
-      console.error("Failed to sign out:", error)
-    }
-  }, [router, signOut])
-
   const drawingTheme: "light" | "dark" = "dark"
 
   if (!allDrawings) return null
@@ -355,7 +340,7 @@ export default function Sidebar() {
           />
         </ScrollArea>
 
-        <StorageFooter userStorage={userStorage} onSignOut={handleSignOut} />
+        <StorageFooter userStorage={userStorage} />
       </SidebarShell>
 
       <SearchDialog
