@@ -18,12 +18,16 @@ const gridFieldClass = `h-full w-full rounded-none border border-[var(--sign-in-
 const gridButtonClass =
   "flex h-full w-full cursor-pointer items-center justify-center rounded-none border border-[var(--sign-in-button-border)] bg-[var(--sign-in-button-bg)] text-base font-semibold text-[var(--sign-in-button-text)] shadow-none transition-colors hover:bg-[var(--sign-in-button-hover)] focus-visible:border-[var(--bit-purple-foreground)] focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
 
+const gridGoogleButtonClass =
+  "flex h-full w-full cursor-pointer items-center justify-center rounded-none border border-[var(--sign-in-grid-line)] bg-[var(--sign-in-canvas-bg)] px-2 text-sm font-semibold text-[var(--sign-in-card-text)] shadow-none transition-colors hover:border-[var(--bit-purple-foreground)] focus-visible:border-[var(--bit-purple-foreground)] focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+
 interface SignInGridPanelProps {
   panelLayout: SignInPanelLayout
   flow: AuthFlow
   loading: boolean
   pendingVerification: AuthFlow | null
   onSubmit: (formData: FormData) => void
+  onGoogleAuth: () => void
 }
 
 export function SignInGridPanel({
@@ -31,7 +35,8 @@ export function SignInGridPanel({
   flow,
   loading,
   pendingVerification,
-  onSubmit
+  onSubmit,
+  onGoogleAuth
 }: SignInGridPanelProps) {
   const sectionLayout = getSignInPanelSectionLayout(panelLayout.panelCols)
   const { header, columnSpan, rows } = sectionLayout
@@ -64,9 +69,11 @@ export function SignInGridPanel({
         loading={loading}
         pendingVerification={pendingVerification}
         onSubmit={onSubmit}
+        onGoogleAuth={onGoogleAuth}
         sectionLayout={sectionLayout}
         fieldClassName={gridFieldClass}
         buttonClassName={gridButtonClass}
+        googleButtonClassName={gridGoogleButtonClass}
       />
 
       <section aria-label="Sign in footer" className="contents">

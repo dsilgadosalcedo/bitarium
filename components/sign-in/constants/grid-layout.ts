@@ -220,6 +220,8 @@ export type SignInPanelSectionLayout = {
   columnSpan: string
   passwordInputColumn: string
   passwordToggleColumn: string
+  submitGoogleColumn: string
+  submitPasswordColumn: string
   header: SignInPanelSectionRange
   body: SignInPanelSectionRange
   footer: SignInPanelSectionRange
@@ -240,6 +242,7 @@ export function getSignInPanelSectionLayout(
   const { start, end } = getContentColumnBounds(panelCols)
 
   const toggleStart = end - 2
+  const submitSplit = start + Math.floor((end - start) / 2)
 
   return {
     contentStart: start,
@@ -247,6 +250,8 @@ export function getSignInPanelSectionLayout(
     columnSpan: `${start} / ${end}`,
     passwordInputColumn: `${start} / ${toggleStart}`,
     passwordToggleColumn: `${toggleStart} / ${end}`,
+    submitGoogleColumn: `${start} / ${submitSplit}`,
+    submitPasswordColumn: `${submitSplit} / ${end}`,
     header: { start: 2, end: 7 },
     body: { start: 8, end: 16 },
     footer: { start: 16, end: 24 },

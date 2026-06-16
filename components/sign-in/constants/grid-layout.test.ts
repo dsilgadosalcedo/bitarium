@@ -93,6 +93,13 @@ describe("panel cell helpers", () => {
     expect(sections.footer.end).toBe(24)
   })
 
+  it("splits the submit row into Google and password buttons", () => {
+    const sections = getSignInPanelSectionLayout(24)
+
+    expect(sections.submitGoogleColumn).toBe("3 / 13")
+    expect(sections.submitPasswordColumn).toBe("13 / 23")
+  })
+
   it("reserves a 2-column square for the password visibility toggle", () => {
     const sections = getSignInPanelSectionLayout(24)
 

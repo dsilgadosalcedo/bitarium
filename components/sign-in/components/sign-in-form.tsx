@@ -3,6 +3,7 @@
 import { Loader2Icon } from "lucide-react"
 import { type SignInPanelSectionLayout } from "../constants/grid-layout"
 import { type AuthFlow } from "../types"
+import { GoogleIcon } from "./google-icon"
 import { SignInFormFields } from "./sign-in-form-fields"
 
 interface SignInFormProps {
@@ -10,9 +11,11 @@ interface SignInFormProps {
   loading: boolean
   pendingVerification: AuthFlow | null
   onSubmit: (formData: FormData) => void
+  onGoogleAuth: () => void
   sectionLayout: SignInPanelSectionLayout
   fieldClassName: string
   buttonClassName: string
+  googleButtonClassName: string
 }
 
 export function SignInForm({
@@ -20,12 +23,23 @@ export function SignInForm({
   loading,
   pendingVerification,
   onSubmit,
+  onGoogleAuth,
   sectionLayout,
   fieldClassName,
-  buttonClassName
+  buttonClassName,
+  googleButtonClassName
 }: SignInFormProps) {
-  const { columnSpan, passwordInputColumn, passwordToggleColumn, rows } =
-    sectionLayout
+  const {
+    columnSpan,
+    passwordInputColumn,
+    passwordToggleColumn,
+    submitGoogleColumn,
+    submitPasswordColumn,
+    rows
+  } = sectionLayout
+
+  const submitRow = flow === "signUp" ? rows.submitSignUp : rows.submitSignIn
+  const passwordLabel = flow === "signIn" ? "Sign in" : "Sign up"
 
   return (
     <form
@@ -55,32 +69,70 @@ export function SignInForm({
         />
       ) : null}
 
-      <div
-        className="h-full w-full"
-        style={{
-          gridColumn: columnSpan,
-          gridRow: flow === "signUp" ? rows.submitSignUp : rows.submitSignIn
-        }}
-      >
-        <button
-          type="submit"
-          disabled={loading}
-          className={`gap-2 ${buttonClassName}`}
+      {pendingVerification ? (
+        <div
+          className="h-full w-full"
+          style={{ gridColumn: columnSpan, gridRow: submitRow }}
         >
-          {loading ? (
-            <>
-              <Loader2Icon className="size-4 animate-spin" />
-              Loading
-            </>
-          ) : pendingVerification ? (
-            "Verify"
-          ) : flow === "signIn" ? (
-            "Sign in"
-          ) : (
-            "Sign up"
-          )}
-        </button>
-      </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`gap-2 ${buttonClassName}`}
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="size-4 animate-spin" />
+                Loading
+              </>
+            ) : (
+              "Verify"
+            )}
+          </button>
+        </div>
+      ) : (
+        <>
+          <div
+            className="h-full w-full"
+            style={{ gridColumn: submitGoogleColumn, gridRow: submitRow }}
+          >
+            <button
+              type="button"
+              disabled={loading}
+              onClick={onGoogleAuth}
+              className={`gap-2 ${googleButtonClassName}`}
+            >
+              {loading ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <GoogleIcon className="size-4 shrink-0" />
+                  <span className="truncate">Google</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div
+            className="h-full w-full"
+            style={{ gridColumn: submitPasswordColumn, gridRow: submitRow }}
+          >
+            <button
+              type="submit"
+              disabled={loading}
+              className={`gap-2 ${buttonClassName}`}
+            >
+              {loading ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin" />
+                  Loading
+                </>
+              ) : (
+                passwordLabel
+              )}
+            </button>
+          </div>
+        </>
+      )}
     </form>
   )
 }

@@ -51,3 +51,4 @@ next-env.d.ts
 .convex/debug.log
 # next-agents-md
 .next-docs/
+snapshots/

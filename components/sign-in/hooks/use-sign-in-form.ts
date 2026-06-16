@@ -3,6 +3,7 @@
 import { useSignIn, useSignUp } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { SSO_CALLBACK_PATH } from "@/lib/auth-routes"
 import { type AuthFlow } from "../types"
 import { getUserFriendlyError } from "../utils/get-user-friendly-error"
 
@@ -17,6 +18,51 @@ export function useSignInForm(flow: AuthFlow) {
 
   const navigateAfterAuth = () => {
     router.push("/app")
+  }
+
+  const handleGoogleAuth = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (flow === "signIn") {
+        if (!signIn) {
+          setError("Authentication is not ready. Please try again.")
+          return
+        }
+
+        const { error: ssoError } = await signIn.sso({
+          strategy: "oauth_google",
+          redirectCallbackUrl: SSO_CALLBACK_PATH,
+          redirectUrl: "/app"
+        })
+
+        if (ssoError) {
+          setError(getUserFriendlyError(ssoError, flow))
+        }
+
+        return
+      }
+
+      if (!signUp) {
+        setError("Authentication is not ready. Please try again.")
+        return
+      }
+
+      const { error: ssoError } = await signUp.sso({
+        strategy: "oauth_google",
+        redirectCallbackUrl: SSO_CALLBACK_PATH,
+        redirectUrl: "/app"
+      })
+
+      if (ssoError) {
+        setError(getUserFriendlyError(ssoError, flow))
+      }
+    } catch (authError) {
+      setError(getUserFriendlyError(authError, flow))
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async (formData: FormData) => {
@@ -161,6 +207,7 @@ export function useSignInForm(flow: AuthFlow) {
     error,
     loading,
     pendingVerification,
-    handleSubmit
+    handleSubmit,
+    handleGoogleAuth
   }
 }
