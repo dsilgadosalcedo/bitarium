@@ -10,9 +10,12 @@ export function useDebouncedCallback(
     drawingId: string | null,
     revision: number
   ) => void,
-  delay: number = 500
+  delay: number = 500,
+  options?: { maxWait?: number }
 ) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const maxWaitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const maxWaitStartedAtRef = useRef<number | null>(null)
   const pendingElementsRef = useRef<readonly OrderedExcalidrawElement[] | null>(
     null
   )
@@ -26,8 +29,43 @@ export function useDebouncedCallback(
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
+      if (maxWaitTimeoutRef.current) {
+        clearTimeout(maxWaitTimeoutRef.current)
+      }
     }
   }, [])
+
+  const runCallback = useCallback(() => {
+    if (
+      pendingElementsRef.current &&
+      pendingAppStateRef.current &&
+      pendingFilesRef.current &&
+      pendingDrawingIdRef.current !== null
+    ) {
+      callback(
+        pendingElementsRef.current,
+        pendingAppStateRef.current,
+        pendingFilesRef.current,
+        pendingDrawingIdRef.current,
+        pendingRevisionRef.current
+      )
+      pendingElementsRef.current = null
+      pendingAppStateRef.current = null
+      pendingFilesRef.current = null
+      pendingDrawingIdRef.current = null
+      pendingRevisionRef.current = 0
+    }
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    if (maxWaitTimeoutRef.current) {
+      clearTimeout(maxWaitTimeoutRef.current)
+      maxWaitTimeoutRef.current = null
+    }
+    maxWaitStartedAtRef.current = null
+  }, [callback])
 
   const debouncedCall = useCallback(
     (
@@ -48,55 +86,23 @@ export function useDebouncedCallback(
         clearTimeout(timeoutRef.current)
       }
       timeoutRef.current = setTimeout(() => {
-        if (
-          pendingElementsRef.current &&
-          pendingAppStateRef.current &&
-          pendingFilesRef.current &&
-          pendingDrawingIdRef.current !== null
-        ) {
-          callback(
-            pendingElementsRef.current,
-            pendingAppStateRef.current,
-            pendingFilesRef.current,
-            pendingDrawingIdRef.current,
-            pendingRevisionRef.current
-          )
-          pendingElementsRef.current = null
-          pendingAppStateRef.current = null
-          pendingFilesRef.current = null
-          pendingDrawingIdRef.current = null
-          pendingRevisionRef.current = 0
-        }
+        runCallback()
       }, delay)
+
+      const maxWait = options?.maxWait
+      if (maxWait !== undefined && maxWaitStartedAtRef.current === null) {
+        maxWaitStartedAtRef.current = Date.now()
+        maxWaitTimeoutRef.current = setTimeout(() => {
+          runCallback()
+        }, maxWait)
+      }
     },
-    [callback, delay]
+    [delay, options?.maxWait, runCallback]
   )
 
   const flush = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    if (
-      pendingElementsRef.current &&
-      pendingAppStateRef.current &&
-      pendingFilesRef.current &&
-      pendingDrawingIdRef.current !== null
-    ) {
-      callback(
-        pendingElementsRef.current,
-        pendingAppStateRef.current,
-        pendingFilesRef.current,
-        pendingDrawingIdRef.current,
-        pendingRevisionRef.current
-      )
-      pendingElementsRef.current = null
-      pendingAppStateRef.current = null
-      pendingFilesRef.current = null
-      pendingDrawingIdRef.current = null
-      pendingRevisionRef.current = 0
-    }
-  }, [callback])
+    runCallback()
+  }, [runCallback])
 
   return { debouncedCall, flush }
 }

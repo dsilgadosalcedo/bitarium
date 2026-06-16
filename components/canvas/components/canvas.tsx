@@ -22,6 +22,10 @@ import {
 import { EditableNameBadge } from "./editable-name-badge"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { reportError, getConvexErrorMessage } from "@/lib/error-handling"
+import {
+  AUTO_SAVE_DEBOUNCE_MS,
+  AUTO_SAVE_MAX_WAIT_MS
+} from "../constants/canvas-constants"
 
 const Excalidraw = dynamic(
   () => import("@excalidraw/excalidraw").then((mod) => mod.Excalidraw),
@@ -223,7 +227,7 @@ export default function Canvas() {
   // Note: We intentionally set state synchronously here to ensure the new drawing
   // is rendered behind (z-10) before starting the fade animation on the old drawing.
   // This is necessary for the crossfade transition to work correctly.
-  /* eslint-disable react-hooks/set-state-in-effect -- crossfade transition requires sync state updates in effect */
+
   useEffect(() => {
     // Only proceed if drawing is loaded (not undefined) and we have a drawingId
     if (drawing === undefined || !drawingId) {
@@ -418,9 +422,9 @@ export default function Canvas() {
           })
       }
     },
-    2500
+    AUTO_SAVE_DEBOUNCE_MS,
+    { maxWait: AUTO_SAVE_MAX_WAIT_MS }
   )
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Flush pending saves when drawing changes
   useEffect(() => {

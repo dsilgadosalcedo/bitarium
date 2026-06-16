@@ -10,7 +10,8 @@ export const FADE_DURATION_MS = 500
 /**
  * Auto-save debounce delay in milliseconds
  */
-export const AUTO_SAVE_DEBOUNCE_MS = 1000
+export const AUTO_SAVE_DEBOUNCE_MS = 500
+export const AUTO_SAVE_MAX_WAIT_MS = 1500
 
 /**
  * Name save debounce delay in milliseconds

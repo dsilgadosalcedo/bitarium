@@ -8,6 +8,7 @@ import {
   type SetStateAction
 } from "react"
 
+import { useSidebarStore } from "../stores/sidebar-store"
 import { type GroupedDrawings, type SidebarDrawing } from "../types"
 
 type SidebarState = {
@@ -53,7 +54,8 @@ type SidebarState = {
 export function useSidebarState(
   allDrawings: SidebarDrawing[] | undefined
 ): SidebarState {
-  const [isOpen, setIsOpen] = useState(false)
+  const isOpen = useSidebarStore((state) => state.isOpen)
+  const setIsOpen = useSidebarStore((state) => state.setIsOpen)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState("")
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null)
