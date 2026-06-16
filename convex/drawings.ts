@@ -8,7 +8,7 @@ import {
   internalAction
 } from "./_generated/server"
 import type { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server"
-import { getUserId, requireUserId } from "./lib/auth"
+import { getUserId } from "./lib/auth"
 import { activeFlag } from "./lib/active"
 import { Id, Doc } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
@@ -23,6 +23,8 @@ type ExcalidrawFileData =
   | Blob
   | { dataURL: string; mimeType?: string }
   | { mimeType: string; data: string | Uint8Array }
+type DrawingContentElements = Doc<"drawingContents">["elements"]
+type DrawingContentAppState = Doc<"drawingContents">["appState"]
 
 const MAX_SAVE_FILE_COUNT = 250
 const MAX_SAVE_REQUEST_BYTES = 40 * 1024 * 1024
@@ -228,6 +230,45 @@ async function loadDrawingAndRole(
   return { drawing, role: null }
 }
 
+async function loadDrawingContent(
+  ctx: QueryCtx | MutationCtx,
+  drawingId: string
+) {
+  return await ctx.db
+    .query("drawingContents")
+    .withIndex("by_drawingId", (q) => q.eq("drawingId", drawingId))
+    .first()
+}
+
+async function upsertDrawingContent(
+  ctx: MutationCtx,
+  args: {
+    drawingId: string
+    elements: DrawingContentElements
+    appState: DrawingContentAppState
+    files?: Record<string, Id<"_storage">>
+  }
+) {
+  const existingContent = await loadDrawingContent(ctx, args.drawingId)
+  const contentPatch = {
+    elements: args.elements,
+    appState: args.appState,
+    ...(args.files !== undefined ? { files: args.files } : {})
+  }
+
+  if (existingContent) {
+    await ctx.db.patch(existingContent._id, contentPatch)
+    return
+  }
+
+  await ctx.db.insert("drawingContents", {
+    drawingId: args.drawingId,
+    elements: args.elements,
+    appState: args.appState,
+    ...(args.files !== undefined ? { files: args.files } : {})
+  })
+}
+
 // Internal mutation to update user storage
 export const updateUserStorageInternal = internalMutation({
   args: {
@@ -271,19 +312,89 @@ export const save = mutation({
     }
 
     if (existing) {
-      await ctx.db.patch(existing._id, {
+      await upsertDrawingContent(ctx, {
+        drawingId: args.drawingId,
         elements: args.elements,
         appState: args.appState,
-        files: args.files
+        ...(args.files !== undefined ? { files: args.files } : {})
+      })
+      await ctx.db.patch(existing._id, {
+        elements: null,
+        appState: null,
+        files: undefined
       })
     } else {
+      await upsertDrawingContent(ctx, {
+        drawingId: args.drawingId,
+        elements: args.elements,
+        appState: args.appState,
+        ...(args.files !== undefined ? { files: args.files } : {})
+      })
       await ctx.db.insert("drawings", {
         userId: userIdString,
         drawingId: args.drawingId,
         name: "Drawing",
+        elements: null,
+        appState: null,
+        isActive: true
+      })
+    }
+
+    return null
+  }
+})
+
+export const saveContent = mutation({
+  args: {
+    drawingId: v.string(),
+    elements: excalidrawElement,
+    appState: excalidrawAppState
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx)
+    if (userId === null) {
+      throw new Error("Unauthorized")
+    }
+
+    const userIdString = String(userId)
+    const { drawing: existing, role } = await loadDrawingAndRole(
+      ctx,
+      args.drawingId,
+      userIdString
+    )
+
+    if (existing && !activeFlag(existing.isActive)) {
+      throw new Error("Drawing not found")
+    }
+
+    if (existing && role === null) {
+      throw new Error("Unauthorized")
+    }
+
+    if (existing) {
+      await upsertDrawingContent(ctx, {
+        drawingId: args.drawingId,
         elements: args.elements,
-        appState: args.appState,
-        files: args.files,
+        appState: args.appState
+      })
+      await ctx.db.patch(existing._id, {
+        elements: null,
+        appState: null,
+        files: undefined
+      })
+    } else {
+      await upsertDrawingContent(ctx, {
+        drawingId: args.drawingId,
+        elements: args.elements,
+        appState: args.appState
+      })
+      await ctx.db.insert("drawings", {
+        userId: userIdString,
+        drawingId: args.drawingId,
+        name: "Drawing",
+        elements: null,
+        appState: null,
         isActive: true
       })
     }
@@ -496,8 +607,11 @@ export const get = query({
       return null
     }
 
-    // Get file URLs
-    const fileUrls = await getFileUrls(ctx, drawing.files)
+    const content = await loadDrawingContent(ctx, args.drawingId)
+    const elements = content?.elements ?? drawing.elements
+    const appState = content?.appState ?? drawing.appState
+    const fileMap = content?.files ?? drawing.files
+    const fileUrls = await getFileUrls(ctx, fileMap)
 
     return {
       _id: drawing._id,
@@ -505,8 +619,8 @@ export const get = query({
       userId: drawing.userId,
       drawingId: drawing.drawingId,
       name: drawing.name,
-      elements: drawing.elements,
-      appState: drawing.appState,
+      elements,
+      appState,
       files: Object.keys(fileUrls).length > 0 ? fileUrls : undefined
     }
   }
@@ -701,6 +815,33 @@ export const getLatest = query({
       .first()
 
     return latest ? latest.drawingId : null
+  }
+})
+
+export const getInitialDrawingId = query({
+  args: {},
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx)
+    if (userId === null) {
+      return null
+    }
+
+    const userIdString = String(userId)
+    const drawings = await ctx.db
+      .query("drawings")
+      .withIndex("by_userId", (q) => q.eq("userId", userIdString))
+      .order("desc")
+      .collect()
+
+    const activeDrawings = drawings.filter((d) => activeFlag(d.isActive))
+    const hasUncategorized = activeDrawings.some((d) => !d.folderId)
+
+    if (!hasUncategorized) {
+      return null
+    }
+
+    return activeDrawings[0]?.drawingId ?? null
   }
 })
 
@@ -976,13 +1117,16 @@ export const getDrawingWithFiles = internalQuery({
       return { status: "not_found" as const, drawing: undefined }
     }
 
+    const content = await loadDrawingContent(ctx, args.drawingId)
+    const files = content?.files ?? drawing.files
+
     if (drawing.isActive === false) {
       return {
         status: "inactive" as const,
         drawing: {
           _id: drawing._id,
           userId: drawing.userId,
-          files: drawing.files,
+          files,
           isActive: false
         }
       }
@@ -994,7 +1138,7 @@ export const getDrawingWithFiles = internalQuery({
         drawing: {
           _id: drawing._id,
           userId: drawing.userId,
-          files: drawing.files,
+          files,
           isActive: activeFlag(drawing.isActive)
         }
       }
@@ -1013,7 +1157,7 @@ export const getDrawingWithFiles = internalQuery({
         drawing: {
           _id: drawing._id,
           userId: drawing.userId,
-          files: drawing.files,
+          files,
           isActive: activeFlag(drawing.isActive)
         }
       }
@@ -1024,7 +1168,7 @@ export const getDrawingWithFiles = internalQuery({
       drawing: {
         _id: drawing._id,
         userId: drawing.userId,
-        files: drawing.files,
+        files,
         isActive: activeFlag(drawing.isActive)
       }
     }
@@ -1072,7 +1216,12 @@ export const completeDrawingDeletion = internalMutation({
       await updateUserStorage(ctx, args.userId, -args.totalBytesDeleted)
     }
 
-    // Finally delete the drawing document from the database
+    const content = await loadDrawingContent(ctx, args.drawingId)
+    if (content) {
+      await ctx.db.delete(content._id)
+    }
+
+    // Finally delete the drawing metadata document from the database
     await ctx.db.delete(existing._id)
 
     return null

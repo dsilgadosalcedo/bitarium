@@ -21,6 +21,13 @@ export default defineSchema({
     .index("by_drawingId", ["drawingId"])
     .index("by_folderId", ["folderId"]),
 
+  drawingContents: defineTable({
+    drawingId: v.string(),
+    elements: excalidrawElement,
+    appState: excalidrawAppState,
+    files: v.optional(v.record(v.string(), v.id("_storage")))
+  }).index("by_drawingId", ["drawingId"]),
+
   folders: defineTable({
     userId: v.string(),
     folderId: v.string(),
