@@ -39,6 +39,7 @@ export default function Sidebar() {
   const updateFolderAppearance = useMutation(api.folders.updateAppearance)
   const removeFolder = useMutation(api.folders.remove)
   const moveDrawingToFolder = useMutation(api.folders.moveDrawingToFolder)
+  const createDrawingMutation = useMutation(api.drawings.createDrawing)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareTargetDrawingId, setShareTargetDrawingId] = useState<
     string | null
@@ -133,10 +134,15 @@ export default function Sidebar() {
   }, [])
 
   const createNewDrawing = useCallback(() => {
-    const newId = crypto.randomUUID()
-    setCurrentDrawingId(newId)
-    setIsOpen(false)
-  }, [setCurrentDrawingId, setIsOpen])
+    void createDrawingMutation({})
+      .then((newId) => {
+        setCurrentDrawingId(newId)
+        setIsOpen(false)
+      })
+      .catch((error) => {
+        console.error("Failed to create drawing:", error)
+      })
+  }, [createDrawingMutation, setCurrentDrawingId, setIsOpen])
 
   const drawingActions = useDrawingActions({
     currentDrawingId,

@@ -1,26 +1,34 @@
 "use client"
 
-import { useEffect } from "react"
-import { useQuery } from "convex/react"
+import { useAuth } from "@clerk/nextjs"
+import { useMutation } from "convex/react"
+import { useEffect, useRef } from "react"
 import { api } from "../../../convex/_generated/api"
 import { useDrawing } from "../../../context/drawing-context"
 
 export function useDrawingInitialization() {
   const { currentDrawingId, setCurrentDrawingId, isHydrated } = useDrawing()
-  const shouldInitialize = isHydrated && !currentDrawingId
-  const initialDrawingId = useQuery(
-    api.drawings.getInitialDrawingId,
-    shouldInitialize ? {} : "skip"
-  )
+  const { isLoaded, isSignedIn } = useAuth()
+  const ensureInitialDrawing = useMutation(api.drawings.ensureInitialDrawing)
+  const hasInitializedRef = useRef(false)
+
+  const shouldInitialize =
+    isHydrated && !currentDrawingId && isLoaded && isSignedIn
 
   useEffect(() => {
-    // Only initialize if we have data and no current drawing ID
-    if (!shouldInitialize) {
+    if (!shouldInitialize || hasInitializedRef.current) {
       return
     }
 
-    if (initialDrawingId !== undefined) {
-      setCurrentDrawingId(initialDrawingId ?? crypto.randomUUID())
-    }
-  }, [initialDrawingId, setCurrentDrawingId, shouldInitialize])
+    hasInitializedRef.current = true
+
+    void ensureInitialDrawing({})
+      .then((drawingId) => {
+        setCurrentDrawingId(drawingId)
+      })
+      .catch((error) => {
+        hasInitializedRef.current = false
+        console.error("Failed to create initial drawing:", error)
+      })
+  }, [ensureInitialDrawing, setCurrentDrawingId, shouldInitialize])
 }

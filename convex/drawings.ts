@@ -8,7 +8,7 @@ import {
   internalAction
 } from "./_generated/server"
 import type { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server"
-import { getUserId } from "./lib/auth"
+import { getUserId, requireUserId } from "./lib/auth"
 import { activeFlag } from "./lib/active"
 import { Id, Doc } from "./_generated/dataModel"
 import { api, internal } from "./_generated/api"
@@ -267,6 +267,38 @@ async function upsertDrawingContent(
     appState: args.appState,
     ...(args.files !== undefined ? { files: args.files } : {})
   })
+}
+
+async function createEmptyDrawing(
+  ctx: MutationCtx,
+  userId: string,
+  drawingId: string,
+  name: string = "Drawing"
+) {
+  await ctx.db.insert("drawings", {
+    userId,
+    drawingId,
+    name,
+    elements: null,
+    appState: null,
+    isActive: true
+  })
+
+  await ctx.db.insert("drawingContents", {
+    drawingId,
+    elements: [],
+    appState: null
+  })
+}
+
+function getLatestUncategorizedDrawingId(
+  drawings: Doc<"drawings">[]
+): string | null {
+  const uncategorized = drawings.filter(
+    (drawing) => activeFlag(drawing.isActive) && !drawing.folderId
+  )
+
+  return uncategorized[0]?.drawingId ?? null
 }
 
 // Internal mutation to update user storage
@@ -797,6 +829,46 @@ export const listCollaborators = query({
   }
 })
 
+export const ensureInitialDrawing = mutation({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => {
+    const userId = await requireUserId(ctx)
+    const userIdString = String(userId)
+
+    const drawings = await ctx.db
+      .query("drawings")
+      .withIndex("by_userId", (q) => q.eq("userId", userIdString))
+      .order("desc")
+      .collect()
+
+    const existingDrawingId = getLatestUncategorizedDrawingId(drawings)
+    if (existingDrawingId) {
+      return existingDrawingId
+    }
+
+    const drawingId = crypto.randomUUID()
+    await createEmptyDrawing(ctx, userIdString, drawingId)
+    return drawingId
+  }
+})
+
+export const createDrawing = mutation({
+  args: {
+    name: v.optional(v.string())
+  },
+  returns: v.string(),
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx)
+    const userIdString = String(userId)
+    const drawingId = crypto.randomUUID()
+    const name = args.name?.trim() || "Drawing"
+
+    await createEmptyDrawing(ctx, userIdString, drawingId, name)
+    return drawingId
+  }
+})
+
 export const getLatest = query({
   args: {},
   returns: v.union(v.string(), v.null()),
@@ -815,33 +887,6 @@ export const getLatest = query({
       .first()
 
     return latest ? latest.drawingId : null
-  }
-})
-
-export const getInitialDrawingId = query({
-  args: {},
-  returns: v.union(v.string(), v.null()),
-  handler: async (ctx) => {
-    const userId = await getUserId(ctx)
-    if (userId === null) {
-      return null
-    }
-
-    const userIdString = String(userId)
-    const drawings = await ctx.db
-      .query("drawings")
-      .withIndex("by_userId", (q) => q.eq("userId", userIdString))
-      .order("desc")
-      .collect()
-
-    const activeDrawings = drawings.filter((d) => activeFlag(d.isActive))
-    const hasUncategorized = activeDrawings.some((d) => !d.folderId)
-
-    if (!hasUncategorized) {
-      return null
-    }
-
-    return activeDrawings[0]?.drawingId ?? null
   }
 })
 
