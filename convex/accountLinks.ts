@@ -26,6 +26,25 @@ const LEGACY_ACCOUNT_LINKS = [
 const LINDA_DUPLICATE_LEGACY_USER_ID = "k17ea4psnz7fx9jcjy1dhes1kx7x1bm3"
 const LINDA_PRIMARY_LEGACY_USER_ID = "k175r5mxjdwqy8ch05r7nhsvcx7x39q0"
 
+async function mergeOwnedDataIfPresent(
+  ctx: Parameters<typeof reassignUserOwnership>[0],
+  fromUserId: string,
+  toUserId: string,
+  mergedUserIds: string[]
+): Promise<void> {
+  if (fromUserId === toUserId) {
+    return
+  }
+
+  const hasData = await userHasOwnedData(ctx, fromUserId)
+  if (!hasData) {
+    return
+  }
+
+  await reassignUserOwnership(ctx, fromUserId, toUserId)
+  mergedUserIds.push(fromUserId)
+}
+
 export const linkLegacyAccount = mutation({
   args: {},
   returns: v.object({
@@ -59,23 +78,28 @@ export const linkLegacyAccount = mutation({
         continue
       }
 
-      const hasData = await userHasOwnedData(ctx, link.legacyUserId)
-      if (!hasData) {
+      const hasLegacyData = await userHasOwnedData(ctx, link.legacyUserId)
+      if (hasLegacyData) {
+        await reassignUserOwnership(ctx, link.legacyUserId, clerkUserId)
         await deleteLegacyUserIfExists(ctx, link.legacyUserId)
-        await ctx.db.patch(link._id, {
-          clerkUserId,
-          linkedAt: Date.now()
-        })
-        continue
+        mergedLegacyUserIds.push(link.legacyUserId)
+      } else {
+        await deleteLegacyUserIfExists(ctx, link.legacyUserId)
       }
 
-      await reassignUserOwnership(ctx, link.legacyUserId, clerkUserId)
-      await deleteLegacyUserIfExists(ctx, link.legacyUserId)
+      if (link.clerkUserId) {
+        await mergeOwnedDataIfPresent(
+          ctx,
+          link.clerkUserId,
+          clerkUserId,
+          mergedLegacyUserIds
+        )
+      }
+
       await ctx.db.patch(link._id, {
         clerkUserId,
         linkedAt: Date.now()
       })
-      mergedLegacyUserIds.push(link.legacyUserId)
     }
 
     return {
@@ -148,6 +172,57 @@ export const mergeLindaDuplicateAccount = internalMutation({
     )
 
     return { merged: true, removedLegacyUser }
+  }
+})
+
+/** One-time repair: David's drawings were migrated to the wrong Clerk user id. */
+export const repairDavidSilgadoAccount = internalMutation({
+  args: {},
+  returns: v.object({
+    deibisMovedToLegacy: v.boolean(),
+    davidMovedToClerk: v.boolean()
+  }),
+  handler: async (ctx) => {
+    const davidClerkUserId = "user_3FCIAxPS2qq7LDGJzpTjbzV57aG"
+    const wrongClerkUserId = "user_3FCCbS6nojK3hpOzTfI2Ik9hjO9"
+    const deibisLegacyUserId = "k170rchxpd38xj57qx93n21ghd83mvvz"
+
+    const deibisOnDavidClerk = await userHasOwnedData(ctx, davidClerkUserId)
+    if (deibisOnDavidClerk) {
+      await reassignUserOwnership(ctx, davidClerkUserId, deibisLegacyUserId)
+    }
+
+    const davidOnWrongClerk = await userHasOwnedData(ctx, wrongClerkUserId)
+    if (davidOnWrongClerk) {
+      await reassignUserOwnership(ctx, wrongClerkUserId, davidClerkUserId)
+    }
+
+    const davidLink = await ctx.db
+      .query("accountLinks")
+      .withIndex("by_email", (q) => q.eq("email", "dsilgadosalcedo@gmail.com"))
+      .first()
+    if (davidLink) {
+      await ctx.db.patch(davidLink._id, {
+        clerkUserId: davidClerkUserId,
+        linkedAt: Date.now()
+      })
+    }
+
+    const deibisLink = await ctx.db
+      .query("accountLinks")
+      .withIndex("by_email", (q) => q.eq("email", "davidsilgado@gmail.com"))
+      .first()
+    if (deibisLink) {
+      await ctx.db.replace(deibisLink._id, {
+        legacyUserId: deibisLink.legacyUserId,
+        email: deibisLink.email
+      })
+    }
+
+    return {
+      deibisMovedToLegacy: deibisOnDavidClerk,
+      davidMovedToClerk: davidOnWrongClerk
+    }
   }
 })
 
