@@ -9,11 +9,27 @@ import { useDrawing } from "../../../context/drawing-context"
 export function useDrawingInitialization() {
   const { currentDrawingId, setCurrentDrawingId, isHydrated } = useDrawing()
   const { isLoaded, isSignedIn } = useAuth()
+  const linkLegacyAccount = useMutation(api.accountLinks.linkLegacyAccount)
   const ensureInitialDrawing = useMutation(api.drawings.ensureInitialDrawing)
+  const hasLinkedRef = useRef(false)
   const hasInitializedRef = useRef(false)
 
-  const shouldInitialize =
-    isHydrated && !currentDrawingId && isLoaded && isSignedIn
+  const canRun = isHydrated && isLoaded && isSignedIn
+
+  useEffect(() => {
+    if (!canRun || hasLinkedRef.current) {
+      return
+    }
+
+    hasLinkedRef.current = true
+
+    void linkLegacyAccount({}).catch((error) => {
+      hasLinkedRef.current = false
+      console.error("Failed to link legacy account:", error)
+    })
+  }, [canRun, linkLegacyAccount])
+
+  const shouldInitialize = canRun && !currentDrawingId
 
   useEffect(() => {
     if (!shouldInitialize || hasInitializedRef.current) {
@@ -22,7 +38,12 @@ export function useDrawingInitialization() {
 
     hasInitializedRef.current = true
 
-    void ensureInitialDrawing({})
+    const initializeDrawing = async () => {
+      await linkLegacyAccount({})
+      return ensureInitialDrawing({})
+    }
+
+    void initializeDrawing()
       .then((drawingId) => {
         setCurrentDrawingId(drawingId)
       })
@@ -30,5 +51,10 @@ export function useDrawingInitialization() {
         hasInitializedRef.current = false
         console.error("Failed to create initial drawing:", error)
       })
-  }, [ensureInitialDrawing, setCurrentDrawingId, shouldInitialize])
+  }, [
+    ensureInitialDrawing,
+    linkLegacyAccount,
+    setCurrentDrawingId,
+    shouldInitialize
+  ])
 }

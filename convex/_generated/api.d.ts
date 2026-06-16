@@ -8,11 +8,14 @@
  * @module
  */
 
+import type * as accountLinks from "../accountLinks.js";
 import type * as collaborators from "../collaborators.js";
 import type * as drawings from "../drawings.js";
 import type * as folders from "../folders.js";
 import type * as lib_active from "../lib/active.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_email from "../lib/email.js";
+import type * as lib_userOwnership from "../lib/userOwnership.js";
 import type * as migrations from "../migrations.js";
 import type * as validators_excalidraw_validators from "../validators/excalidraw_validators.js";
 
@@ -23,11 +26,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  accountLinks: typeof accountLinks;
   collaborators: typeof collaborators;
   drawings: typeof drawings;
   folders: typeof folders;
   "lib/active": typeof lib_active;
   "lib/auth": typeof lib_auth;
+  "lib/email": typeof lib_email;
+  "lib/userOwnership": typeof lib_userOwnership;
   migrations: typeof migrations;
   "validators/excalidraw_validators": typeof validators_excalidraw_validators;
 }>;

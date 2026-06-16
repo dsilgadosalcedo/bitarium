@@ -52,5 +52,28 @@ export default defineSchema({
   })
     .index("by_collaboratorUserId", ["collaboratorUserId"])
     .index("by_drawingId", ["drawingId"])
-    .index("by_collaborator_and_drawingId", ["collaboratorUserId", "drawingId"])
+    .index("by_collaborator_and_drawingId", [
+      "collaboratorUserId",
+      "drawingId"
+    ]),
+
+  accountLinks: defineTable({
+    legacyUserId: v.string(),
+    email: v.string(),
+    clerkUserId: v.optional(v.string()),
+    linkedAt: v.optional(v.number())
+  })
+    .index("by_legacyUserId", ["legacyUserId"])
+    .index("by_email", ["email"])
+    .index("by_clerkUserId", ["clerkUserId"]),
+
+  users: defineTable({
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean())
+  }).index("by_email", ["email"])
 })
