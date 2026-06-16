@@ -11,6 +11,7 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME
 } from "@/lib/seo"
+import { clerkAppearance } from "@/lib/clerk-appearance"
 import { ClerkProvider } from "@clerk/nextjs"
 
 import "../styles/globals.css"
@@ -59,7 +60,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
         <SiteJsonLd />
-        <ClerkProvider>
+        <ClerkProvider appearance={clerkAppearance}>
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </ClerkProvider>
       </body>

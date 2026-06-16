@@ -1,5 +1,6 @@
 "use client"
 
+import { clerkUserButtonAppearance } from "@/lib/clerk-appearance"
 import { UserButton, useUser } from "@clerk/nextjs"
 
 export function SidebarProfile() {
@@ -31,15 +32,7 @@ export function SidebarProfile() {
 
   return (
     <div className="flex items-center gap-3 px-3 py-2">
-      <UserButton
-        appearance={{
-          elements: {
-            userButtonAvatarBox: "h-9 w-9",
-            userButtonTrigger:
-              "rounded-full focus:shadow-none focus:ring-2 focus:ring-sidebar-ring"
-          }
-        }}
-      />
+      <UserButton appearance={clerkUserButtonAppearance} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-sidebar-foreground">
           {displayName}
