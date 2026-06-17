@@ -4,6 +4,7 @@ import {
   getLoginErrorZoneLayout,
   type SignInPanelLayout
 } from "../constants/grid-layout"
+import { type AuthFlow } from "../types"
 import { ErrorMessage } from "./error-message"
 import { px } from "../utils/px"
 
@@ -12,17 +13,29 @@ const errorZoneClass =
 
 interface SignInErrorZoneProps {
   panelLayout: SignInPanelLayout
+  flow: AuthFlow
+  pendingVerification: AuthFlow | null
   error: string | null
 }
 
-export function SignInErrorZone({ panelLayout, error }: SignInErrorZoneProps) {
+export function SignInErrorZone({
+  panelLayout,
+  flow,
+  pendingVerification,
+  error
+}: SignInErrorZoneProps) {
   const zone = getLoginErrorZoneLayout(panelLayout)
+  const showCaptcha = flow === "signUp" && !pendingVerification && !error
+
+  if (!error && !showCaptcha) {
+    return null
+  }
 
   return (
     <section
-      aria-label="Sign in errors"
+      aria-label={error ? "Sign in errors" : "Sign up verification"}
       aria-live="polite"
-      className="absolute z-10"
+      className="absolute z-10 overflow-visible"
       style={{
         left: px(zone.left),
         top: px(zone.top),
@@ -34,7 +47,12 @@ export function SignInErrorZone({ panelLayout, error }: SignInErrorZoneProps) {
         <div className={errorZoneClass}>
           <ErrorMessage error={error} />
         </div>
-      ) : null}
+      ) : (
+        <div
+          id="clerk-captcha"
+          className="flex h-full w-full items-center justify-center"
+        />
+      )}
     </section>
   )
 }

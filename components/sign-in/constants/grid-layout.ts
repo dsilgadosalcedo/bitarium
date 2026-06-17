@@ -229,32 +229,10 @@ export type SignInPanelSectionLayout = {
     username: string
     password: string
     passwordHint: string
-    captcha: string
     submitSignIn: string
     submitSignUp: string
-    flowToggleSignIn: string
-    flowToggleSignUp: string
-    termsSignIn: string
-    termsSignUp: string
-  }
-}
-
-export function getSignInFlowRows(
-  flow: "signIn" | "signUp",
-  rows: SignInPanelSectionLayout["rows"]
-) {
-  if (flow === "signUp") {
-    return {
-      submit: rows.submitSignUp,
-      flowToggle: rows.flowToggleSignUp,
-      terms: rows.termsSignUp
-    }
-  }
-
-  return {
-    submit: rows.submitSignIn,
-    flowToggle: rows.flowToggleSignIn,
-    terms: rows.termsSignIn
+    flowToggle: string
+    terms: string
   }
 }
 
@@ -281,13 +259,10 @@ export function getSignInPanelSectionLayout(
       username: "8 / 10",
       password: "11 / 13",
       passwordHint: "13 / 14",
-      captcha: "14 / 18",
       submitSignIn: "14 / 16",
-      submitSignUp: "18 / 20",
-      flowToggleSignIn: "17 / 19",
-      flowToggleSignUp: "20 / 22",
-      termsSignIn: "20 / 23",
-      termsSignUp: "22 / 24"
+      submitSignUp: "15 / 17",
+      flowToggle: "17 / 19",
+      terms: "20 / 23"
     }
   }
 }

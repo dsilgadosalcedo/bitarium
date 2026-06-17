@@ -2,7 +2,6 @@
 
 import {
   SIGN_IN_CELL_SIZE,
-  getSignInFlowRows,
   getSignInPanelSectionLayout,
   type SignInPanelLayout
 } from "../constants/grid-layout"
@@ -41,7 +40,6 @@ export function SignInGridPanel({
 }: SignInGridPanelProps) {
   const sectionLayout = getSignInPanelSectionLayout(panelLayout.panelCols)
   const { header, columnSpan, rows } = sectionLayout
-  const flowRows = getSignInFlowRows(flow, rows)
   return (
     <div
       className="absolute z-10"
@@ -81,14 +79,14 @@ export function SignInGridPanel({
       <section aria-label="Sign in footer" className="contents">
         <div
           className="flex items-center justify-center"
-          style={{ gridColumn: columnSpan, gridRow: flowRows.flowToggle }}
+          style={{ gridColumn: columnSpan, gridRow: rows.flowToggle }}
         >
           <FlowToggle flow={flow} />
         </div>
 
         <div
           className="flex items-end justify-center px-1 pb-[18px]"
-          style={{ gridColumn: columnSpan, gridRow: flowRows.terms }}
+          style={{ gridColumn: columnSpan, gridRow: rows.terms }}
         >
           <TermsAndPrivacy />
         </div>

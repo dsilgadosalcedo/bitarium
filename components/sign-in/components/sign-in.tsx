@@ -34,7 +34,12 @@ export function SignIn({ flow }: { flow: AuthFlow }) {
         onSubmit={handleSubmit}
         onGoogleAuth={handleGoogleAuth}
       />
-      <SignInErrorZone panelLayout={panelLayout} error={error} />
+      <SignInErrorZone
+        panelLayout={panelLayout}
+        flow={flow}
+        pendingVerification={pendingVerification}
+        error={error}
+      />
     </div>
   )
 }

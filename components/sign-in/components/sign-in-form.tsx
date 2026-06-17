@@ -1,10 +1,7 @@
 "use client"
 
 import { Loader2Icon } from "lucide-react"
-import {
-  getSignInFlowRows,
-  type SignInPanelSectionLayout
-} from "../constants/grid-layout"
+import { type SignInPanelSectionLayout } from "../constants/grid-layout"
 import { type AuthFlow, type AuthLoadingAction } from "../types"
 import { GoogleIcon } from "./google-icon"
 import { SignInFormFields } from "./sign-in-form-fields"
@@ -41,8 +38,7 @@ export function SignInForm({
     rows
   } = sectionLayout
 
-  const flowRows = getSignInFlowRows(flow, rows)
-  const submitRow = flowRows.submit
+  const submitRow = flow === "signUp" ? rows.submitSignUp : rows.submitSignIn
   const passwordLabel = flow === "signIn" ? "Sign in" : "Sign up"
   const isLoading = loadingAction !== null
 
@@ -66,14 +62,6 @@ export function SignInForm({
         passwordGridRow={rows.password}
         hintGridRow={rows.passwordHint}
       />
-
-      {flow === "signUp" && !pendingVerification ? (
-        <div
-          id="clerk-captcha"
-          className="flex items-center justify-center"
-          style={{ gridColumn: columnSpan, gridRow: rows.captcha }}
-        />
-      ) : null}
 
       {pendingVerification ? (
         <div
