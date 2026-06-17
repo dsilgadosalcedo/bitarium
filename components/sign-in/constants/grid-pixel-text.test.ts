@@ -8,6 +8,7 @@ import {
   getBitariumLogoAriumCells,
   getBitariumLogoBitCells,
   getBitariumLogoCells,
+  getBitariumLogoLinkLayout,
   FOOTER_INNER_FILL_COLOR_END,
   FOOTER_INNER_FILL_COLOR_START,
   FOOTER_INNER_FILL_FLICKER_CHANCE_HOVER,
@@ -22,7 +23,7 @@ import {
   getFooterMarkReservedCells,
   randomFooterInnerFillColor
 } from "./grid-pixel-text"
-import { SIGN_IN_CELL_SIZE } from "./grid-layout"
+import { SIGN_IN_CELL_SIZE, type GridCell } from "./grid-layout"
 
 describe("grid pixel text", () => {
   it("fades ARium opacity from 40% on the left to 5% on the right by column", () => {
@@ -56,7 +57,44 @@ describe("grid pixel text", () => {
     ).toBe(true)
   })
 
-  it("places ARium after BIT without overlapping", () => {
+  it("matches ink spacing between Bi, i, and T to other logo letters", () => {
+    const getInkGaps = (cells: GridCell[]) => {
+      const colGroups: number[][] = []
+
+      for (const col of [...new Set(cells.map((cell) => cell.col))].sort(
+        (a, b) => a - b
+      )) {
+        const lastGroup = colGroups[colGroups.length - 1]
+        const lastCol = lastGroup?.[lastGroup.length - 1]
+
+        if (lastCol !== undefined && col - lastCol > 1) {
+          colGroups.push([col])
+        } else if (lastGroup) {
+          lastGroup.push(col)
+        } else {
+          colGroups.push([col])
+        }
+      }
+
+      const gaps: number[] = []
+
+      for (let index = 0; index < colGroups.length - 1; index++) {
+        const currentRight = colGroups[index]!.at(-1)!
+        const nextLeft = colGroups[index + 1]![0]!
+        gaps.push(nextLeft - currentRight)
+      }
+
+      return gaps
+    }
+
+    const bitGaps = getInkGaps(getBitariumLogoBitCells())
+    const ariumGaps = getInkGaps(getBitariumLogoAriumCells())
+
+    expect(bitGaps).toEqual([2, 2])
+    expect(ariumGaps[0]).toBe(bitGaps[0])
+  })
+
+  it("places ARium after BiT without overlapping", () => {
     const bitCols = new Set(getBitariumLogoBitCells().map((cell) => cell.col))
     const ariumCols = new Set(
       getBitariumLogoAriumCells().map((cell) => cell.col)
@@ -146,6 +184,20 @@ describe("grid pixel text", () => {
     for (const { col, row } of fillCells) {
       expect(textKeys.has(`${col},${row}`)).toBe(false)
     }
+  })
+
+  it("sizes the Bitarium logo link to the logo hit area", () => {
+    const logoCells = getBitariumLogoCells()
+    const layout = getBitariumLogoLinkLayout()
+    const minCol = Math.min(...logoCells.map((cell) => cell.col))
+    const maxCol = Math.max(...logoCells.map((cell) => cell.col))
+    const minRow = Math.min(...logoCells.map((cell) => cell.row))
+    const maxRow = Math.max(...logoCells.map((cell) => cell.row))
+
+    expect(layout.left).toBe(minCol * SIGN_IN_CELL_SIZE)
+    expect(layout.top).toBe(minRow * SIGN_IN_CELL_SIZE)
+    expect(layout.width).toBe((maxCol - minCol + 1) * SIGN_IN_CELL_SIZE)
+    expect(layout.height).toBe((maxRow - minRow + 1) * SIGN_IN_CELL_SIZE)
   })
 
   it("sizes the footer mark link to the reserved hit area", () => {

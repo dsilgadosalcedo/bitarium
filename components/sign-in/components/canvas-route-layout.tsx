@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import { useState, type ReactNode } from "react"
 
 import { SIGN_IN_PATH, SIGN_UP_PATH } from "@/lib/auth-routes"
+import { BitariumLogoLink } from "@/components/sign-in/components/bitarium-logo-link"
 import { FooterMarkLink } from "@/components/sign-in/components/footer-mark-link"
 import { GridBackground } from "@/components/sign-in/components/grid-background"
 import { SignInBackgroundPicker } from "@/components/sign-in/components/sign-in-background-picker"
@@ -45,6 +46,7 @@ function CanvasRouteLayoutContent({ children }: { children: ReactNode }) {
       </div>
       {isHydrated ? (
         <>
+          <BitariumLogoLink />
           <SignInBackgroundPicker
             backgroundId={backgroundId}
             onBackgroundChange={setBackgroundId}

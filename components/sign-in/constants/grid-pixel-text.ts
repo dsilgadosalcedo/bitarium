@@ -11,6 +11,7 @@ export type PixelTextConfig = {
 
 export const BITARIUM_LOGO_PATTERNS: Record<string, readonly string[]> = {
   B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  i: ["1", "0", "1", "1", "1", "1", "1"],
   I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
   T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
@@ -55,11 +56,37 @@ export function buildPixelTextCells({
 }
 
 const BITARIUM_LOGO_LETTER_WIDTH = 5
-const BITARIUM_LOGO_LETTER_GAP = 1
+export const BITARIUM_LOGO_LETTER_GAP = 1
+const BITARIUM_LOGO_NARROW_LETTER_WIDTH = 1
 const BITARIUM_LOGO_ORIGIN_COL = 2
 const BITARIUM_LOGO_ORIGIN_ROW = 2
-const BITARIUM_LOGO_PREFIX = "BIT"
+const BITARIUM_LOGO_PREFIX = "BiT"
 const BITARIUM_LOGO_SUFFIX = "ARIUM"
+
+function getBitariumLogoLetterWidth(letter: string) {
+  if (letter === "i") {
+    return BITARIUM_LOGO_NARROW_LETTER_WIDTH
+  }
+
+  return BITARIUM_LOGO_LETTER_WIDTH
+}
+
+function getBitariumLogoTextAdvance(text: string) {
+  let advance = 0
+
+  for (let index = 0; index < text.length; index++) {
+    const letter = text[index]
+    if (!letter) continue
+
+    advance += getBitariumLogoLetterWidth(letter)
+
+    if (index < text.length - 1) {
+      advance += BITARIUM_LOGO_LETTER_GAP
+    }
+  }
+
+  return advance
+}
 
 export const BITARIUM_LOGO_BIT_OPACITY = 0.92
 export const BITARIUM_LOGO_ARIUM_MIN_OPACITY = 0.05
@@ -88,14 +115,31 @@ export function getBitariumLogoAriumOpacity(
 }
 
 function buildBitariumLogoCells(text: string, originCol: number): GridCell[] {
-  return buildPixelTextCells({
-    text,
-    patterns: BITARIUM_LOGO_PATTERNS,
-    letterWidth: BITARIUM_LOGO_LETTER_WIDTH,
-    letterGap: BITARIUM_LOGO_LETTER_GAP,
-    originCol,
-    originRow: BITARIUM_LOGO_ORIGIN_ROW
-  })
+  const cells: GridCell[] = []
+  let colOffset = originCol
+
+  for (const letter of text) {
+    const pattern = BITARIUM_LOGO_PATTERNS[letter]
+    if (!pattern) continue
+
+    const letterWidth = getBitariumLogoLetterWidth(letter)
+
+    for (let row = 0; row < pattern.length; row++) {
+      const rowPattern = pattern[row] ?? ""
+      for (let col = 0; col < rowPattern.length; col++) {
+        if (rowPattern[col] === "1") {
+          cells.push({
+            col: colOffset + col,
+            row: BITARIUM_LOGO_ORIGIN_ROW + row
+          })
+        }
+      }
+    }
+
+    colOffset += letterWidth + BITARIUM_LOGO_LETTER_GAP
+  }
+
+  return cells
 }
 
 export function getBitariumLogoBitCells(): GridCell[] {
@@ -105,8 +149,8 @@ export function getBitariumLogoBitCells(): GridCell[] {
 export function getBitariumLogoAriumCells(): LogoOpacityCell[] {
   const ariumOriginCol =
     BITARIUM_LOGO_ORIGIN_COL +
-    BITARIUM_LOGO_PREFIX.length *
-      (BITARIUM_LOGO_LETTER_WIDTH + BITARIUM_LOGO_LETTER_GAP)
+    getBitariumLogoTextAdvance(BITARIUM_LOGO_PREFIX) +
+    BITARIUM_LOGO_LETTER_GAP
 
   const baseCells = buildBitariumLogoCells(BITARIUM_LOGO_SUFFIX, ariumOriginCol)
 
@@ -127,6 +171,23 @@ export function getBitariumLogoAriumCells(): LogoOpacityCell[] {
 
 export function getBitariumLogoCells(): GridCell[] {
   return [...getBitariumLogoBitCells(), ...getBitariumLogoAriumCells()]
+}
+
+export const BITARIUM_LOGO_URL = "/"
+
+export function getBitariumLogoLinkLayout() {
+  const cells = getBitariumLogoCells()
+  const minCol = Math.min(...cells.map((cell) => cell.col))
+  const maxCol = Math.max(...cells.map((cell) => cell.col))
+  const minRow = Math.min(...cells.map((cell) => cell.row))
+  const maxRow = Math.max(...cells.map((cell) => cell.row))
+
+  return {
+    left: minCol * SIGN_IN_CELL_SIZE,
+    top: minRow * SIGN_IN_CELL_SIZE,
+    width: (maxCol - minCol + 1) * SIGN_IN_CELL_SIZE,
+    height: (maxRow - minRow + 1) * SIGN_IN_CELL_SIZE
+  }
 }
 
 export const HEART_MARK_MARGIN_CELLS = 2
