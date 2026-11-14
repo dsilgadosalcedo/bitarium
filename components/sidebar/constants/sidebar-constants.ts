@@ -8,6 +8,7 @@ import {
   Clover,
   Briefcase,
   Dumbbell,
+  Download,
   Folder,
   FolderPlus,
   Globe2,
@@ -107,6 +108,7 @@ export function formatStorage(bytes: number): string {
 }
 
 export const sidebarIcons = {
+  Download,
   Plus,
   MoreVertical,
   PanelRightCloseIcon,

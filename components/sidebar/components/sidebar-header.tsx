@@ -5,11 +5,15 @@ import { sidebarIcons } from "../constants/sidebar-constants"
 type SidebarHeaderProps = {
   onNewDrawing: () => void
   onOpenSearch: () => void
+  onExportAll: () => void
+  exportingAll: boolean
 }
 
 export function SidebarHeader({
   onNewDrawing,
-  onOpenSearch
+  onOpenSearch,
+  onExportAll,
+  exportingAll
 }: SidebarHeaderProps) {
   return (
     <header className="flex flex-col items-center gap-2 pt-5 pb-2">
@@ -38,6 +42,15 @@ export function SidebarHeader({
           variant="ghost"
         >
           <sidebarIcons.SearchIcon /> Search drawings
+        </Button>
+        <Button
+          onClick={onExportAll}
+          className="w-full justify-start font-normal"
+          variant="ghost"
+          disabled={exportingAll}
+        >
+          <sidebarIcons.Download className="h-4 w-4" />
+          {exportingAll ? "Exporting drawings…" : "Export all drawings"}
         </Button>
       </div>
     </header>

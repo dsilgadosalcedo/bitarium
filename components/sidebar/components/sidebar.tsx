@@ -1,6 +1,6 @@
 "use client"
 
-import { useAction, useMutation, useQuery } from "convex/react"
+import { useAction, useConvex, useMutation, useQuery } from "convex/react"
 import { useCallback, useMemo, useState } from "react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -21,6 +21,7 @@ import { type SidebarDrawing, type SidebarFolder } from "../types"
 
 export default function Sidebar() {
   const { currentDrawingId, setCurrentDrawingId } = useDrawing()
+  const convex = useConvex()
   const allDrawings = useQuery(api.drawings.list, {}) as
     | SidebarDrawing[]
     | undefined
@@ -48,6 +49,7 @@ export default function Sidebar() {
   const [shareError, setShareError] = useState<string | null>(null)
   const [shareLoading, setShareLoading] = useState(false)
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set())
+  const [exportingAll, setExportingAll] = useState(false)
   const shareCollaborators = useQuery(
     api.drawings.listCollaborators,
     shareDialogOpen && shareTargetDrawingId
@@ -143,6 +145,37 @@ export default function Sidebar() {
         console.error("Failed to create drawing:", error)
       })
   }, [createDrawingMutation, setCurrentDrawingId, setIsOpen])
+
+  const exportAllDrawings = useCallback(async () => {
+    if (!allDrawings?.length || exportingAll) return
+    setExportingAll(true)
+    try {
+      const drawings = await Promise.all(
+        allDrawings.map((drawing) =>
+          convex.query(api.drawings.get, { drawingId: drawing.drawingId })
+        )
+      )
+      const exportData = {
+        format: "bitarium-drawings",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        drawings: drawings.filter((drawing) => drawing !== null)
+      }
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json"
+      })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `bitarium-drawings-${new Date().toISOString().slice(0, 10)}.json`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Failed to export drawings:", error)
+    } finally {
+      setExportingAll(false)
+    }
+  }, [allDrawings, convex, exportingAll])
 
   const drawingActions = useDrawingActions({
     currentDrawingId,
@@ -280,6 +313,8 @@ export default function Sidebar() {
         <SidebarHeader
           onNewDrawing={createNewDrawing}
           onOpenSearch={() => setSearchDialogOpen(true)}
+          onExportAll={() => void exportAllDrawings()}
+          exportingAll={exportingAll}
         />
 
         <FolderSection
