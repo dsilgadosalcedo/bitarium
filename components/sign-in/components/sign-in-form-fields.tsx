@@ -58,9 +58,9 @@ export function SignInFormFields({
         <input
           type="text"
           name="email"
-          placeholder="Username"
+          placeholder="Username or email"
           required
-          aria-label="Username"
+          aria-label="Username or email"
           autoComplete="username"
           className={fieldClassName}
         />
