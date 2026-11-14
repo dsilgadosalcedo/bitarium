@@ -1,6 +1,9 @@
 "use client"
 
 import { useAction, useConvex, useMutation, useQuery } from "convex/react"
+import { serializeAsJSON } from "@excalidraw/excalidraw"
+import type { BinaryFiles } from "@excalidraw/excalidraw/types"
+import { zipSync } from "fflate"
 import { useCallback, useMemo, useState } from "react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -155,21 +158,63 @@ export default function Sidebar() {
           convex.query(api.drawings.get, { drawingId: drawing.drawingId })
         )
       )
-      const exportData = {
-        format: "bitarium-drawings",
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        drawings: drawings.filter((drawing) => drawing !== null)
+      const exportedDrawings = drawings.filter((drawing) => drawing !== null)
+      const usedFilenames = new Map<string, number>()
+      const files: Record<string, Uint8Array> = {}
+
+      for (const drawing of exportedDrawings) {
+        const baseName =
+          drawing.name
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "drawing"
+        const count = (usedFilenames.get(baseName) ?? 0) + 1
+        usedFilenames.set(baseName, count)
+        const filename = `${baseName}${count > 1 ? `-${count}` : ""}.excalidraw`
+
+        const binaryFiles: BinaryFiles = {}
+        await Promise.all(
+          Object.entries(drawing.files ?? {}).map(async ([fileId, url]) => {
+            const response = await fetch(url)
+            if (!response.ok) {
+              throw new Error(`Could not download an image in ${drawing.name}`)
+            }
+            const blob = await response.blob()
+            const dataURL = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(String(reader.result))
+              reader.onerror = () => reject(reader.error)
+              reader.readAsDataURL(blob)
+            })
+            binaryFiles[fileId] = {
+              id: fileId as BinaryFiles[string]["id"],
+              dataURL: dataURL as BinaryFiles[string]["dataURL"],
+              mimeType: (blob.type ||
+                "application/octet-stream") as BinaryFiles[string]["mimeType"],
+              created: Date.now()
+            }
+          })
+        )
+
+        files[filename] = new TextEncoder().encode(
+          serializeAsJSON(
+            drawing.elements ?? [],
+            drawing.appState ?? {},
+            binaryFiles,
+            "local"
+          )
+        )
       }
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: "application/json"
-      })
+
+      const zip = zipSync(files, { level: 6 })
+      const blob = new Blob([zip], { type: "application/zip" })
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `bitarium-drawings-${new Date().toISOString().slice(0, 10)}.json`
+      link.download = `bitarium-drawings-${new Date().toISOString().slice(0, 10)}.zip`
       link.click()
-      URL.revokeObjectURL(url)
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error("Failed to export drawings:", error)
     } finally {
