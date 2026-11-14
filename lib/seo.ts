@@ -14,7 +14,7 @@ export const PUBLISHER_NAME =
   process.env.NEXT_PUBLIC_PUBLISHER_NAME?.trim() || "7Lineas"
 
 export const PUBLISHER_URL =
-  process.env.NEXT_PUBLIC_PUBLISHER_URL?.trim() || "https://7lineas.com"
+  process.env.NEXT_PUBLIC_PUBLISHER_URL?.trim() || "https://www.7lineas.com"
 
 export const SEO_LOCALE = "en_US"
 

@@ -18,7 +18,14 @@
     "type": "git",
     "url": "https://github.com/dsilgadosalcedo/bitarium"
   },
-  "packageManager": "pnpm@11.1.1",
+  "packageManager": "pnpm@11.19.0",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.19.0",
+      "onFail": "download"
+    }
+  },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
@@ -92,13 +99,6 @@
   "portless": {
     "name": "bitarium",
     "script": "dev:frontend:app"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "unrs-resolver"
-    ]
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
