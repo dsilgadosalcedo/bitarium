@@ -1,7 +1,6 @@
 "use client"
 
 import { useAction, useConvex, useMutation, useQuery } from "convex/react"
-import { serializeAsJSON } from "@excalidraw/excalidraw"
 import type { BinaryFiles } from "@excalidraw/excalidraw/types"
 import { zipSync } from "fflate"
 import { useCallback, useMemo, useState } from "react"
@@ -153,6 +152,7 @@ export default function Sidebar() {
     if (!allDrawings?.length || exportingAll) return
     setExportingAll(true)
     try {
+      const { serializeAsJSON } = await import("@excalidraw/excalidraw")
       const drawings = await Promise.all(
         allDrawings.map((drawing) =>
           convex.query(api.drawings.get, { drawingId: drawing.drawingId })
