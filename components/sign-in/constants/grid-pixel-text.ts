@@ -232,7 +232,7 @@ export function getHeartMarkCells(
 }
 
 export const FOOTER_MARK_TEXT = "7L"
-export const FOOTER_MARK_URL = "https://7lineas.com"
+export const FOOTER_MARK_URL = "https://www.7lineas.com"
 export const FOOTER_MARK_MARGIN_CELLS = 2
 export const FOOTER_MARK_LETTER_WIDTH = 2
 export const FOOTER_MARK_LETTER_HEIGHT = 4

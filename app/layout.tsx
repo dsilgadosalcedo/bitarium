@@ -36,9 +36,6 @@ export const metadata: Metadata = {
   ...createPageMetadata({
     description: SITE_DESCRIPTION
   }),
-  icons: {
-    icon: [{ url: "/app.svg", type: "image/svg+xml" }]
-  },
   appleWebApp: {
     title: SITE_NAME,
     capable: true,
